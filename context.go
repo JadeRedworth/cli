@@ -77,26 +77,10 @@ func contextCmd() cli.Command {
 
 func create(c *cli.Context) error {
 	context := c.Args().Get(0)
-
-	err := ValidateContextName(context)
-	if err != nil {
-		return err
-	}
-
-	provider := config.DefaultProvider
-	if cProvider := c.String("provider"); cProvider != "" {
-		provider = cProvider
-	}
-
-	apiUrl := ""
-	if cApiUrl := c.String("api-url"); cApiUrl != "" {
-		apiUrl = cApiUrl
-	}
-
+	var contextValues = map[string]string{}
+	apiURL := ""
 	registry := ""
-	if cRegistry := c.String("registry"); cRegistry != "" {
-		registry = cRegistry
-	}
+	provider := config.DefaultProvider
 
 	if check, err := checkContextFileExists(context); check {
 		if err != nil {
@@ -105,15 +89,29 @@ func create(c *cli.Context) error {
 		return errors.New("context already exists")
 
 	}
-	path, err := createFilePath(context)
+
+	err := ValidateContextName(context)
 	if err != nil {
 		return err
 	}
 
-	contextValues := map[string]string{
-		config.ContextProvider: provider,
-		config.EnvFnAPIURL:     apiUrl,
-		config.EnvFnRegistry:   registry,
+	if cApiURL := c.String("api-url"); cApiURL != "" {
+		apiURL = cApiURL
+	}
+
+	if cRegistry := c.String("registry"); cRegistry != "" {
+		registry = cRegistry
+	}
+
+	if cProvider := c.String("provider"); cProvider != "" {
+		provider = cProvider
+	}
+
+	contextValues, err = validateContextProvider(config.Provider(provider), apiURL, registry)
+
+	path, err := createFilePath(context)
+	if err != nil {
+		return err
 	}
 
 	err = config.WriteYamlFile(path, contextValues)
@@ -214,7 +212,7 @@ func list(c *cli.Context) error {
 			return err
 		}
 
-		v := config.ContextFile{}
+		v := config.DefaultContextFile{}
 		err = yaml.Unmarshal(yamlFile, &v)
 		if err != nil {
 			return err
@@ -256,6 +254,23 @@ func getAvailableContexts() ([]os.FileInfo, error) {
 	}
 
 	return files, nil
+}
+
+func validateContextProvider(provider config.Provider, apiUrl string, registry string) (map[string]string, error) {
+	var contextValues = map[string]string{}
+
+	switch provider {
+	case config.DefaultContextProvider:
+		contextValues = config.DefaultContextConfigContents
+	case config.OracleContextProvider:
+		contextValues = config.OracleContextConfigContents
+	default:
+		return nil, fmt.Errorf("please enter a valid provider")
+	}
+	contextValues[config.EnvFnAPIURL] = apiUrl
+	contextValues[config.EnvFnRegistry] = registry
+
+	return contextValues, nil
 }
 
 func ValidateContextName(context string) error {

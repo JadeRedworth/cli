@@ -14,6 +14,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+type Provider string
+
 const (
 	rootConfigPathName = ".fn"
 
@@ -21,7 +23,7 @@ const (
 	configName             = "config"
 	contextConfigFileName  = "config.yaml"
 	defaultContextFileName = "default.yaml"
-	defaultLocalAPIURL     = "http://localhost:8080/v1"
+	DefaultLocalAPIURL     = "http://localhost:8080/v1"
 	DefaultProvider        = "default"
 
 	readWritePerms = os.FileMode(0755)
@@ -38,20 +40,43 @@ const (
 	OraclePrivateKey    = "private-key"
 	OracleCompartmentID = "compartment-id"
 	OracleDisableCerts  = "disable-certs"
+
+	DefaultContextProvider Provider = "default"
+	OracleContextProvider  Provider = "oracle"
 )
 
 var defaultRootConfigContents = map[string]string{CurrentContext: ""}
-var defaultContextConfigContents = map[string]string{
+var DefaultContextConfigContents = map[string]string{
 	ContextProvider: DefaultProvider,
-	EnvFnAPIURL:     defaultLocalAPIURL,
+	EnvFnAPIURL:     DefaultLocalAPIURL,
 	EnvFnRegistry:   "",
 }
 
+var OracleContextConfigContents = map[string]string{
+	ContextProvider:     "oracle",
+	EnvFnAPIURL:         "",
+	EnvFnRegistry:       "",
+	OracleKeyID:         "",
+	OraclePrivateKey:    "",
+	OracleCompartmentID: "",
+	OracleDisableCerts:  "true",
+}
+
 // ContextFile defines the internal structure of a default context
-type ContextFile struct {
+type DefaultContextFile struct {
 	ContextProvider string `yaml:"provider"`
 	EnvFnAPIURL     string `yaml:"api-url"`
 	EnvFnRegistry   string `yaml:"registry"`
+}
+
+type OracleContextFile struct {
+	ContextProvider     string `yaml:"provider"`
+	EnvFnAPIURL         string `yaml:"api-url"`
+	EnvFnRegistry       string `yaml:"registry"`
+	OracleKeyID         string `yaml:"key-id"`
+	OraclePrivateKey    string `yaml:"private-key"`
+	OracleCompartmentID string `yaml:"compartment-id"`
+	OracleDisableCerts  string `yaml:"disable-certs"`
 }
 
 // Init : Initialise/load config direc
@@ -62,7 +87,7 @@ func Init() error {
 	replacer := strings.NewReplacer("-", "_")
 	viper.SetEnvKeyReplacer(replacer)
 
-	viper.SetDefault(EnvFnAPIURL, defaultLocalAPIURL)
+	viper.SetDefault(EnvFnAPIURL, DefaultLocalAPIURL)
 
 	return ensureConfiguration()
 }
@@ -106,7 +131,7 @@ func ensureConfiguration() error {
 			return fmt.Errorf("error creating default.yaml context file %v", err)
 		}
 
-		err = WriteYamlFile(defaultContextPath, defaultContextConfigContents)
+		err = WriteYamlFile(defaultContextPath, DefaultContextConfigContents)
 		if err != nil {
 			return err
 		}
