@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 
 	"github.com/fnproject/cli/config"
+	"github.com/fnproject/cli/utils"
 	fnclient "github.com/fnproject/fn_go/client"
 	openapi "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
@@ -77,21 +79,38 @@ func challengeForPKeyPassword() string {
 func privateKey(pkeyFilePath string) *rsa.PrivateKey {
 	keyBytes, err := ioutil.ReadFile(pkeyFilePath)
 	if err != nil {
-		panic(fmt.Sprintf("Unable to load private key from file: %s. Error: %s", pkeyFilePath, err))
+		fmt.Fprintf(os.Stderr, "Unable to load private key from file: %s. Error: %s \n", pkeyFilePath, err)
+		os.Exit(1)
 	}
 
-	pKeyPword := challengeForPKeyPassword()
+	pKeyPword := viper.GetString(config.OracleKeyPassword)
+	if pKeyPword == "" {
+		pKeyPword = challengeForPKeyPassword()
+	}
+
 	key, err := common.PrivateKeyFromBytes(keyBytes, common.String(pKeyPword))
 	if err != nil {
-		panic(fmt.Sprintf("Unable to load private key from file bytes: %s. Error: %s", pkeyFilePath, err))
+		fmt.Fprintf(os.Stderr, "Unable to load private key from file bytes: %s. Error: %s \n", pkeyFilePath, err)
+		os.Exit(1)
 	}
 	return key
 }
 
 func oracleProvider(transport *openapi.Runtime) {
-	keyID := viper.GetString(config.OracleKeyID)
-	pKey := privateKey(viper.GetString(config.OraclePrivateKey))
+
+	// Load configuration from .oci directory which has secrets (key-file, key-password and fingerprint)
+	viper.AddConfigPath(filepath.Join(utils.GetHomeDir(), ".oci"))
+	viper.SetConfigName("oci-config")
+	viper.MergeInConfig()
+
 	compartmentID := viper.GetString(config.OracleCompartmentID)
+	tenancyID := viper.GetString(config.OracleTenancyID)
+	userID := viper.GetString(config.OracleUserID)
+	fingerprint := viper.GetString(config.OracleFingerprint)
+
+	keyID := tenancyID + "/" + userID + "/" + fingerprint
+
+	pKey := privateKey(viper.GetString(config.OracleKeyFile))
 
 	if viper.GetBool(config.OracleDisableCerts) {
 		transport.Transport = InsecureRoundTripper(transport.Transport)

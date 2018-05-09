@@ -31,10 +31,15 @@ const (
 	EnvFnAPIURL   = "api-url"
 	EnvFnContext  = "context"
 
-	OracleKeyID         = "key-id"
-	OraclePrivateKey    = "private-key"
+	OracleUserID        = "user-id"
+	OracleTenancyID     = "tenancy-id"
+	OracleSubnetID      = "subnet-id"
 	OracleCompartmentID = "compartment-id"
 	OracleDisableCerts  = "disable-certs"
+
+	OracleFingerprint = "fingerprint"
+	OracleKeyFile     = "key-file"
+	OracleKeyPassword = "key-password"
 )
 
 var defaultRootConfigContents = &utils.ContextMap{CurrentContext: ""}

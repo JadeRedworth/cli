@@ -10,10 +10,12 @@ import (
 	"strings"
 
 	"github.com/fnproject/cli/client"
+	config "github.com/fnproject/cli/config"
 	fnclient "github.com/fnproject/fn_go/client"
 	apiapps "github.com/fnproject/fn_go/client/apps"
 	"github.com/fnproject/fn_go/models"
 	"github.com/jmoiron/jsonq"
+	"github.com/spf13/viper"
 	"github.com/urfave/cli"
 )
 
@@ -169,9 +171,14 @@ func (a *appsCmd) list(c *cli.Context) error {
 }
 
 func (a *appsCmd) create(c *cli.Context) error {
+	annotations := map[string]interface{}{
+		"oracle.com/oci/compartmentId": viper.GetString(config.OracleCompartmentID),
+	}
+
 	body := &models.AppWrapper{App: &models.App{
-		Name:   c.Args().Get(0),
-		Config: extractEnvConfig(c.StringSlice("config")),
+		Name:        c.Args().Get(0),
+		Config:      extractEnvConfig(c.StringSlice("config")),
+		Annotations: annotations,
 	}}
 
 	resp, err := a.client.Apps.PostApps(&apiapps.PostAppsParams{

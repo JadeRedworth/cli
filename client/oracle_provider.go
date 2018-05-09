@@ -92,6 +92,9 @@ func (t CompartmentIDRoundTripper) RoundTrip(request *http.Request) (response *h
 	params := request.URL.Query()
 	params.Add("compartmentId", t.compartmentID)
 	request.URL.RawQuery = params.Encode()
+
+	//GO API
+	request.Header.Set("opc-compartment-id", t.compartmentID)
 	response, e = t.transport.RoundTrip(request)
 	return
 }
