@@ -9,6 +9,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/fnproject/cli/client"
 	"github.com/fnproject/cli/common"
 	apiapps "github.com/fnproject/fn_go/client/apps"
 	"github.com/fnproject/fn_go/models"
@@ -16,11 +17,12 @@ import (
 	"github.com/urfave/cli"
 )
 
-func (appCmd *app) listApps(c *cli.Context) error {
+func listApps(c *cli.Context) error {
+	a, _ := client.GetClient()
 	params := &apiapps.GetAppsParams{Context: context.Background()}
 	var resApps []*models.App
 	for {
-		resp, err := appCmd.Client.Apps.GetApps(params)
+		resp, err := a.Client.Apps.GetApps(params)
 		if err != nil {
 			switch e := err.(type) {
 			case *apiapps.GetAppsAppNotFound:
@@ -57,13 +59,14 @@ func (appCmd *app) listApps(c *cli.Context) error {
 	return nil
 }
 
-func (appCmd *app) createApp(c *cli.Context) error {
+func createApp(c *cli.Context) error {
+	a, _ := client.GetClient()
 	body := &models.AppWrapper{App: &models.App{
 		Name:   c.Args().Get(0),
 		Config: common.ExtractEnvConfig(c.StringSlice("config")),
 	}}
 
-	resp, err := appCmd.Client.Apps.PostApps(&apiapps.PostAppsParams{
+	resp, err := a.Client.Apps.PostApps(&apiapps.PostAppsParams{
 		Context: context.Background(),
 		Body:    body,
 	})
@@ -83,14 +86,14 @@ func (appCmd *app) createApp(c *cli.Context) error {
 	return nil
 }
 
-func (appCmd *app) updateApps(c *cli.Context) error {
+func updateApps(c *cli.Context) error {
 	appName := c.Args().First()
 
 	patchedApp := &models.App{
 		Config: common.ExtractEnvConfig(c.StringSlice("config")),
 	}
 
-	err := appCmd.patchApp(appName, patchedApp)
+	err := patchApp(appName, patchedApp)
 	if err != nil {
 		return err
 	}
@@ -99,7 +102,7 @@ func (appCmd *app) updateApps(c *cli.Context) error {
 	return nil
 }
 
-func (appCmd *app) configSetApps(c *cli.Context) error {
+func configSetApps(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	key := c.Args().Get(1)
 	value := c.Args().Get(2)
@@ -110,7 +113,7 @@ func (appCmd *app) configSetApps(c *cli.Context) error {
 
 	app.Config[key] = value
 
-	if err := appCmd.patchApp(appName, app); err != nil {
+	if err := patchApp(appName, app); err != nil {
 		return fmt.Errorf("error updating app configuration: %v", err)
 	}
 
@@ -118,11 +121,12 @@ func (appCmd *app) configSetApps(c *cli.Context) error {
 	return nil
 }
 
-func (appCmd *app) configGetApps(c *cli.Context) error {
+func configGetApps(c *cli.Context) error {
+	a, _ := client.GetClient()
 	appName := c.Args().Get(0)
 	key := c.Args().Get(1)
 
-	resp, err := appCmd.Client.Apps.GetAppsApp(&apiapps.GetAppsAppParams{
+	resp, err := a.Client.Apps.GetAppsApp(&apiapps.GetAppsAppParams{
 		App:     appName,
 		Context: context.Background(),
 	})
@@ -141,10 +145,11 @@ func (appCmd *app) configGetApps(c *cli.Context) error {
 	return nil
 }
 
-func (appCmd *app) configListApps(c *cli.Context) error {
+func configListApps(c *cli.Context) error {
+	a, _ := client.GetClient()
 	appName := c.Args().Get(0)
 
-	resp, err := appCmd.Client.Apps.GetAppsApp(&apiapps.GetAppsAppParams{
+	resp, err := a.Client.Apps.GetAppsApp(&apiapps.GetAppsAppParams{
 		App:     appName,
 		Context: context.Background(),
 	})
@@ -160,7 +165,7 @@ func (appCmd *app) configListApps(c *cli.Context) error {
 	return nil
 }
 
-func (appCmd *app) configUnsetApps(c *cli.Context) error {
+func configUnsetApps(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	key := c.Args().Get(1)
 
@@ -170,7 +175,7 @@ func (appCmd *app) configUnsetApps(c *cli.Context) error {
 
 	app.Config[key] = ""
 
-	if err := appCmd.patchApp(appName, app); err != nil {
+	if err := patchApp(appName, app); err != nil {
 		return fmt.Errorf("error updating app configuration: %v", err)
 	}
 
@@ -178,8 +183,9 @@ func (appCmd *app) configUnsetApps(c *cli.Context) error {
 	return nil
 }
 
-func (appCmd *app) patchApp(appName string, app *models.App) error {
-	_, err := appCmd.Client.Apps.PatchAppsApp(&apiapps.PatchAppsAppParams{
+func patchApp(appName string, app *models.App) error {
+	a, _ := client.GetClient()
+	_, err := a.Client.Apps.PatchAppsApp(&apiapps.PatchAppsAppParams{
 		Context: context.Background(),
 		App:     appName,
 		Body:    &models.AppWrapper{App: app},
@@ -199,7 +205,8 @@ func (appCmd *app) patchApp(appName string, app *models.App) error {
 	return nil
 }
 
-func (appCmd *app) inspectApps(c *cli.Context) error {
+func inspectApps(c *cli.Context) error {
+	a, _ := client.GetClient()
 	if c.Args().Get(0) == "" {
 		return errors.New("missing app name after the inspect command")
 	}
@@ -207,7 +214,7 @@ func (appCmd *app) inspectApps(c *cli.Context) error {
 	appName := c.Args().First()
 	prop := c.Args().Get(1)
 
-	resp, err := appCmd.Client.Apps.GetAppsApp(&apiapps.GetAppsAppParams{
+	resp, err := a.Client.Apps.GetAppsApp(&apiapps.GetAppsAppParams{
 		Context: context.Background(),
 		App:     appName,
 	})
@@ -251,13 +258,14 @@ func (appCmd *app) inspectApps(c *cli.Context) error {
 	return nil
 }
 
-func (appCmd *app) deleteApps(c *cli.Context) error {
+func deleteApps(c *cli.Context) error {
+	a, _ := client.GetClient()
 	appName := c.Args().First()
 	if appName == "" {
 		return errors.New("app name required to delete")
 	}
 
-	_, err := appCmd.Client.Apps.DeleteAppsApp(&apiapps.DeleteAppsAppParams{
+	_, err := a.Client.Apps.DeleteAppsApp(&apiapps.DeleteAppsAppParams{
 		Context: context.Background(),
 		App:     appName,
 	})

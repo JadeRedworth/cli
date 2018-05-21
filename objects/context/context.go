@@ -1,4 +1,4 @@
-package objects
+package context
 
 import (
 	"errors"
@@ -11,7 +11,6 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/fnproject/cli/common"
 	"github.com/fnproject/cli/config"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
@@ -22,94 +21,6 @@ var contextsPath = config.GetContextsPath()
 var fileExtension = ".yaml"
 
 type ContextMap config.ContextMap
-
-func contextCommand(command string) cli.Command {
-	ctxMap := ContextMap{}
-	var cCmd cli.Command
-
-	switch command {
-	case common.CreateCmd:
-		cCmd = getCreateContextCommand()
-	case common.ListCmd:
-		cCmd = getListContextCommand()
-	case common.DeleteCmd:
-		cCmd = getDeleteContextCommand()
-	case common.UseCmd:
-		cCmd = getUseContextCommand()
-	case common.UpdateCmd:
-		cCmd = ctxMap.getUpdateContextCommand()
-	case common.UnsetCmd:
-		cCmd = getUnsetContextCommand()
-	}
-
-	return cCmd
-}
-
-func getCreateContextCommand() cli.Command {
-	return cli.Command{
-		Name:      "context",
-		Usage:     "create a new context",
-		ArgsUsage: "<context>",
-		Action:    createContext,
-		Flags: []cli.Flag{
-			cli.StringFlag{
-				Name:  "provider",
-				Usage: "context provider",
-			},
-			cli.StringFlag{
-				Name:  "api-url",
-				Usage: "context api url",
-			},
-			cli.StringFlag{
-				Name:  "registry",
-				Usage: "context registry",
-			},
-		},
-	}
-}
-
-func getListContextCommand() cli.Command {
-	return cli.Command{
-		Name:   "contexts",
-		Usage:  "list contexts",
-		Action: listContext,
-	}
-}
-
-func getDeleteContextCommand() cli.Command {
-	return cli.Command{
-		Name:      "context",
-		Usage:     "delete a context",
-		ArgsUsage: "<context>",
-		Action:    deleteCtx,
-	}
-}
-
-func (ctxMap ContextMap) getUpdateContextCommand() cli.Command {
-	return cli.Command{
-		Name:      "context",
-		Usage:     "update context files",
-		ArgsUsage: "<key> <value>",
-		Action:    ctxMap.updateCtx,
-	}
-}
-
-func getUseContextCommand() cli.Command {
-	return cli.Command{
-		Name:      "context",
-		Usage:     "use context for future invocations",
-		ArgsUsage: "<context>",
-		Action:    useCtx,
-	}
-}
-
-func getUnsetContextCommand() cli.Command {
-	return cli.Command{
-		Name:   "context",
-		Usage:  "unset current-context",
-		Action: unsetCtx,
-	}
-}
 
 func createContext(c *cli.Context) error {
 	context := c.Args().Get(0)

@@ -1,4 +1,4 @@
-package main
+package log
 
 import (
 	"context"
@@ -16,37 +16,15 @@ type logsCmd struct {
 	client *fnclient.Fn
 }
 
-func logs() cli.Command {
-	c := logsCmd{}
-
-	return cli.Command{
-		Name:  "logs",
-		Usage: "manage function calls for apps",
-		Before: func(cxt *cli.Context) error {
-			var err error
-			c.client, err = client.APIClient()
-			return err
-		},
-		Subcommands: []cli.Command{
-			{
-				Name:      "get",
-				Aliases:   []string{"g"},
-				Usage:     "get logs for a call. Must provide call_id or last (l) to retrieve the most recent calls logs.",
-				ArgsUsage: "<app> <call-id>",
-				Action:    c.get,
-			},
-		},
-	}
-}
-
-func (log *logsCmd) get(ctx *cli.Context) error {
+func get(ctx *cli.Context) error {
+	g, _ := client.GetClient()
 	app, callID := ctx.Args().Get(0), ctx.Args().Get(1)
 	if callID == "last" || callID == "l" {
 		params := ccall.GetAppsAppCallsParams{
 			App:     app,
 			Context: context.Background(),
 		}
-		resp, err := log.client.Call.GetAppsAppCalls(&params)
+		resp, err := g.Client.Call.GetAppsAppCalls(&params)
 		if err != nil {
 			switch e := err.(type) {
 			case *ccall.GetAppsAppCallsNotFound:
@@ -67,7 +45,7 @@ func (log *logsCmd) get(ctx *cli.Context) error {
 		App:     app,
 		Context: context.Background(),
 	}
-	resp, err := log.client.Operations.GetAppsAppCallsCallLog(&params)
+	resp, err := g.Client.Operations.GetAppsAppCallsCallLog(&params)
 	if err != nil {
 		switch e := err.(type) {
 		case *apicall.GetAppsAppCallsCallLogNotFound:

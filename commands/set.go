@@ -4,14 +4,14 @@ import (
 	"github.com/urfave/cli"
 )
 
-func InspectCommand() cli.Command {
+func SetCommand() cli.Command {
 	return cli.Command{
-		Name:        "inspect",
-		Aliases:     []string{"i"},
-		Usage:       "inspect command",
+		Name:        "set",
+		Aliases:     []string{"s"},
+		Usage:       "set command",
 		Category:    "MANAGEMENT COMMANDS",
 		Hidden:      false,
 		ArgsUsage:   "<command>",
-		Subcommands: GetCommands(InspectCmds),
+		Subcommands: GetCommands(SetCmds),
 	}
 }

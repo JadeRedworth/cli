@@ -13,6 +13,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+type FnClient struct {
+	Client *fnclient.Fn
+}
+
+func GetClient() (FnClient, error) {
+	cl := FnClient{}
+	var err error
+	cl.Client, err = APIClient()
+	return cl, err
+}
 func Host() string {
 	hostURL := HostURL()
 	return hostURL.Host

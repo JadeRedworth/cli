@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -12,11 +12,12 @@ import (
 	"github.com/urfave/cli"
 )
 
-func startCmd() cli.Command {
+func StartCommand() cli.Command {
 	return cli.Command{
-		Name:   "start",
-		Usage:  "start a functions server",
-		Action: start,
+		Name:     "start",
+		Usage:    "start a functions server",
+		Category: "SERVER COMMANDS",
+		Action:   start,
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "log-level",

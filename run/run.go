@@ -24,14 +24,15 @@ const (
 	LocalTestURL     = "http://localhost:8080/myapp/hello"
 )
 
-func Run() cli.Command {
+func RunCommand() cli.Command {
 	r := runCmd{}
 
 	return cli.Command{
-		Name:   "run",
-		Usage:  "run a function locally",
-		Flags:  append(GetRunFlags(), []cli.Flag{}...),
-		Action: r.run,
+		Name:     "run",
+		Usage:    "run a function locally",
+		Category: "DEVELOPMENT COMMANDS",
+		Flags:    append(GetRunFlags(), []cli.Flag{}...),
+		Action:   r.run,
 	}
 }
 

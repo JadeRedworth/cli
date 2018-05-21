@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"errors"
@@ -8,15 +8,16 @@ import (
 	"github.com/urfave/cli"
 )
 
-func push() cli.Command {
+func PushCommand() cli.Command {
 	cmd := pushcmd{}
 	var flags []cli.Flag
 	flags = append(flags, cmd.flags()...)
 	return cli.Command{
-		Name:   "push",
-		Usage:  "push function to Docker Hub",
-		Flags:  flags,
-		Action: cmd.push,
+		Name:     "push",
+		Usage:    "push function to Docker Hub",
+		Category: "DEVELOPMENT COMMANDS",
+		Flags:    flags,
+		Action:   cmd.push,
 	}
 }
 

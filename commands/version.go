@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -11,11 +11,12 @@ import (
 // Version of Fn CLI
 var Version = "0.4.92"
 
-func version() cli.Command {
+func VersionCommand() cli.Command {
 	return cli.Command{
-		Name:   "version",
-		Usage:  "displays cli and server versions",
-		Action: versionCMD,
+		Name:     "version",
+		Usage:    "displays cli and server versions",
+		Category: "OTHER COMMANDS",
+		Action:   versionCMD,
 	}
 }
 

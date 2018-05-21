@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"bufio"
@@ -26,13 +26,14 @@ type testStruct struct {
 	Tests []common.FFTest `yaml:"tests,omitempty" json:"tests,omitempty"`
 }
 
-func testfn() cli.Command {
+func TestCommand() cli.Command {
 	cmd := testcmd{}
 	return cli.Command{
-		Name:   "test",
-		Usage:  "run functions test if present",
-		Flags:  cmd.flags(),
-		Action: cmd.test,
+		Name:     "test",
+		Usage:    "run functions test if present",
+		Category: "DEVELOPMENT COMMANDS",
+		Flags:    cmd.flags(),
+		Action:   cmd.test,
 		Before: func(cxt *cli.Context) error {
 			var err error
 			cmd.Fn, err = client.APIClient()
@@ -81,7 +82,7 @@ func (t *testcmd) test(c *cli.Context) error {
 func (t *testcmd) testAll(c *cli.Context, wd string) error {
 	testCount := 0
 	errorCount := 0
-	err := walkFuncs(wd, func(path string, ff *common.FuncFile, err error) error {
+	err := common.WalkFuncs(wd, func(path string, ff *common.FuncFile, err error) error {
 		if err != nil { // probably some issue with funcfile parsing, can decide to handle this differently if we'd like
 			return err
 		}

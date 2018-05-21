@@ -23,14 +23,15 @@ var (
 	initialVersion = "0.0.1"
 )
 
-func Bump() cli.Command {
+func BumpCommand() cli.Command {
 	cmd := bumpcmd{}
 	flags := append([]cli.Flag{}, cmd.flags()...)
 	return cli.Command{
-		Name:   "bump",
-		Usage:  "bump function version",
-		Flags:  flags,
-		Action: cmd.bump,
+		Name:     "bump",
+		Usage:    "bump function version",
+		Category: "DEVELOPMENT COMMANDS",
+		Flags:    flags,
+		Action:   cmd.bump,
 	}
 }
 

@@ -4,43 +4,19 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/fnproject/cli/commands"
-	"github.com/fnproject/cli/common"
 	"github.com/fnproject/cli/config"
-	"github.com/fnproject/cli/objects/route"
-	"github.com/fnproject/cli/run"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
 )
 
-var aliases = map[string]cli.Command{
-	"build":  build(),
-	"bump":   common.Bump(),
-	"deploy": deploy(),
-	"push":   push(),
-	"run":    run.Run(),
-	"call":   route.Call(),
-	"calls":  calls(),
-	"logs":   logs(),
-}
-
-func aliasesFn() []cli.Command {
-	cmds := []cli.Command{}
-	for alias, cmd := range aliases {
-		cmd.Name = alias
-		cmd.Hidden = true
-		cmds = append(cmds, cmd)
-	}
-	return cmds
-}
-
 func newFn() *cli.App {
-
 	app := cli.NewApp()
 	app.Name = "fn"
-	app.Version = Version
+	app.Version = commands.Version
 	app.Authors = []cli.Author{{Name: "Fn Project"}}
 	app.Description = "Fn command line tool"
 	app.Before = func(c *cli.Context) error {
@@ -92,33 +68,13 @@ LEARN MORE:
 	app.CommandNotFound = func(c *cli.Context, cmd string) {
 		fmt.Fprintf(os.Stderr, "Command not found: \"%v\" -- see `fn --help` for more information.\n", cmd)
 	}
-	app.Commands = []cli.Command{
-		startCmd(),
-		// updateCmd(),
-		// initFn(),
-		//routes(),
-		// images(),
-		// lambda(),
-		version(),
-		// calls(),
-		// deploy(),
-		// logs(),
-		// testfn(),
-		// buildServer(),
-		// //contextCmd(),
 
-		// New Commands
-		commands.CreateCommand(),
-		commands.DeleteCommand(),
-		commands.ListCommand(),
-		commands.UnsetCommand(),
-		commands.UpdateCommand(),
-		commands.UseCommand(),
-		commands.InspectCommand(),
-		commands.CallCommand(),
-		commands.ConfigCommand(),
+	app.Commands = append(app.Commands, commands.GetCommands(commands.Commands)...)
+	app.Action = func(c *cli.Context) {
+		cli.ShowSubcommandHelp(c)
 	}
-	app.Commands = append(app.Commands, aliasesFn()...)
+	sort.Sort(cli.FlagsByName(app.Flags))
+	sort.Sort(cli.CommandsByName(app.Commands))
 
 	prepareCmdArgsValidation(app.Commands)
 

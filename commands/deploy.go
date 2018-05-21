@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"errors"
@@ -17,15 +17,16 @@ import (
 	"github.com/urfave/cli"
 )
 
-func deploy() cli.Command {
+func DeployCommand() cli.Command {
 	cmd := deploycmd{}
 	var flags []cli.Flag
 	flags = append(flags, cmd.flags()...)
 	return cli.Command{
-		Name:   "deploy",
-		Usage:  "deploys a function to the functions server. (bumps, build, pushes and updates route)",
-		Flags:  flags,
-		Action: cmd.deploy,
+		Name:     "deploy",
+		Usage:    "deploys a function to the functions server. (bumps, build, pushes and updates route)",
+		Category: "DEVELOPMENT COMMANDS",
+		Flags:    flags,
+		Action:   cmd.deploy,
 		Before: func(cxt *cli.Context) error {
 			var err error
 			cmd.Fn, err = client.APIClient()
@@ -187,7 +188,7 @@ func (p *deploycmd) deployAll(c *cli.Context, appName string, appf *common.AppFi
 	wd := common.GetWd()
 
 	var funcFound bool
-	err := walkFuncs(wd, func(path string, ff *common.FuncFile, err error) error {
+	err := common.WalkFuncs(wd, func(path string, ff *common.FuncFile, err error) error {
 		if err != nil { // probably some issue with funcfile parsing, can decide to handle this differently if we'd like
 			return err
 		}
@@ -295,17 +296,11 @@ func setRootFuncInfo(ff *common.FuncFile, appName string) {
 
 func (p *deploycmd) updateRoute(c *cli.Context, appName string, ff *common.FuncFile) error {
 	fmt.Printf("Updating route %s using image %s...\n", ff.Path, ff.ImageName())
-	apiClient, err := client.APIClient()
-	if err != nil {
-		return err
-	}
-	fnClient := common.FnClient{Client: apiClient}
-	routesCmd := route.CreateRouteCmd(&fnClient)
 	rt := &models.Route{}
 	if err := route.RouteWithFuncFile(ff, rt); err != nil {
 		return fmt.Errorf("error getting route with funcfile: %s", err)
 	}
-	return routesCmd.PutRoute(c, appName, ff.Path, rt)
+	return route.PutRoute(appName, ff.Path, rt)
 }
 
 func expandEnvConfig(configs map[string]string) map[string]string {
@@ -313,35 +308,6 @@ func expandEnvConfig(configs map[string]string) map[string]string {
 		configs[k] = os.ExpandEnv(v)
 	}
 	return configs
-}
-
-// Theory of operation: this takes an optimistic approach to detect whether a
-// package must be rebuild/bump/deployed. It loads for all files mtime's and
-// compare with functions.json own mtime. If any file is younger than
-// functions.json, it triggers a rebuild.
-// The problem with this approach is that depending on the OS running it, the
-// time granularity of these timestamps might lead to false negatives - that is
-// a package that is stale but it is not recompiled. A more elegant solution
-// could be applied here, like https://golang.org/src/cmd/go/pkg.go#L1111
-func isstale(path string) bool {
-	fi, err := os.Stat(path)
-	if err != nil {
-		return true
-	}
-
-	fnmtime := fi.ModTime()
-	dir := filepath.Dir(path)
-	err = filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		if info.ModTime().After(fnmtime) {
-			return errors.New("found stale package")
-		}
-		return nil
-	})
-
-	return err != nil
 }
 
 func (p *deploycmd) updateAppConfig(appf *common.AppFile) error {

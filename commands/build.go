@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -8,14 +8,15 @@ import (
 	"github.com/urfave/cli"
 )
 
-func build() cli.Command {
+func BuildCommand() cli.Command {
 	cmd := buildcmd{}
 	flags := append([]cli.Flag{}, cmd.flags()...)
 	return cli.Command{
-		Name:   "build",
-		Usage:  "build function version",
-		Flags:  flags,
-		Action: cmd.build,
+		Name:     "build",
+		Usage:    "build function version",
+		Category: "DEVELOPMENT COMMANDS",
+		Flags:    flags,
+		Action:   cmd.build,
 	}
 }
 

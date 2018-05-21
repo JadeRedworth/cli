@@ -1,27 +1,17 @@
 package commands
 
 import (
-	"github.com/fnproject/cli/client"
-	"github.com/fnproject/cli/common"
-	"github.com/fnproject/cli/objects"
 	"github.com/urfave/cli"
 )
 
 func CallCommand() cli.Command {
-	apiClient := common.FnClient{}
-
 	return cli.Command{
-		Name:    "call",
-		Aliases: []string{"cl"},
-		Usage:   "call command",
-		Before: func(c *cli.Context) error {
-			var err error
-			apiClient.Client, err = client.APIClient()
-			return err
-		},
-		Category:    "MANAGEMENT COMMANDS",
+		Name:        "call",
+		Aliases:     []string{"cl"},
+		Usage:       "call command",
+		Category:    "DEVELOPMENT COMMANDS",
 		Hidden:      false,
 		ArgsUsage:   "<command>",
-		Subcommands: objects.GetSubCommands(common.CallCmd, &apiClient),
+		Subcommands: GetCommands(CallCmds),
 	}
 }
