@@ -3,6 +3,7 @@ package commands
 import (
 	"github.com/fnproject/cli/common"
 	"github.com/fnproject/cli/objects/app"
+	"github.com/fnproject/cli/objects/call"
 	"github.com/fnproject/cli/objects/context"
 	"github.com/fnproject/cli/objects/log"
 	"github.com/fnproject/cli/objects/route"
@@ -48,6 +49,7 @@ var DeleteCmds = cmd{
 var ListCmds = cmd{
 	"apps":   app.GetListAppsCommand(),
 	"routes": route.GetListRoutesCommand(),
+	"calls":  call.GetListCallsCommand(),
 }
 
 var CallCmds = cmd{
@@ -79,6 +81,7 @@ var GetCmds = cmd{
 	"apps":   app.GetGetConfigAppsCommand(),
 	"routes": route.GetGetConfigRoutesCommand(),
 	"logs":   log.GetGetLogsCommand(),
+	"calls":  call.GetGetCallsCommand(),
 }
 
 var SetCmds = cmd{

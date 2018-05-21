@@ -1,4 +1,4 @@
-package main
+package call
 
 import (
 	"context"
@@ -7,68 +7,10 @@ import (
 	"time"
 
 	"github.com/fnproject/cli/client"
-	fnclient "github.com/fnproject/fn_go/client"
 	apicall "github.com/fnproject/fn_go/client/call"
 	"github.com/fnproject/fn_go/models"
 	"github.com/urfave/cli"
 )
-
-type callsCmd struct {
-	client *fnclient.Fn
-}
-
-func calls() cli.Command {
-	c := callsCmd{}
-
-	return cli.Command{
-		Name:  "calls",
-		Usage: "manage function calls for apps",
-		Before: func(cxt *cli.Context) error {
-			var err error
-			c.client, err = client.APIClient()
-			return err
-		},
-		Subcommands: []cli.Command{
-			{
-				Name:      "get",
-				Aliases:   []string{"g"},
-				Usage:     "get function call info per app",
-				ArgsUsage: "<app> <call-id>",
-				Action:    c.get,
-			},
-			{
-				Name:      "list",
-				Aliases:   []string{"l"},
-				Usage:     "list all calls for the specific app. Route is optional",
-				ArgsUsage: "<app>",
-				Action:    c.list,
-				Flags: []cli.Flag{
-					cli.StringFlag{
-						Name:  "path",
-						Usage: "function's path",
-					},
-					cli.StringFlag{
-						Name:  "cursor",
-						Usage: "pagination cursor",
-					},
-					cli.StringFlag{
-						Name:  "from-time",
-						Usage: "'start' timestamp",
-					},
-					cli.StringFlag{
-						Name:  "to-time",
-						Usage: "'stop' timestamp",
-					},
-					cli.Int64Flag{
-						Name:  "n",
-						Usage: "number of calls to return",
-						Value: int64(100),
-					},
-				},
-			},
-		},
-	}
-}
 
 func printCalls(calls []*models.Call) {
 	for _, call := range calls {
@@ -88,14 +30,15 @@ func printCalls(calls []*models.Call) {
 	}
 }
 
-func (call *callsCmd) get(ctx *cli.Context) error {
+func get(ctx *cli.Context) error {
+	c, _ := client.GetClient()
 	app, callID := ctx.Args().Get(0), ctx.Args().Get(1)
 	params := apicall.GetAppsAppCallsCallParams{
 		Call:    callID,
 		App:     app,
 		Context: context.Background(),
 	}
-	resp, err := call.client.Call.GetAppsAppCallsCall(&params)
+	resp, err := c.Client.Call.GetAppsAppCallsCall(&params)
 	if err != nil {
 		switch e := err.(type) {
 		case *apicall.GetAppsAppCallsCallNotFound:
@@ -108,7 +51,8 @@ func (call *callsCmd) get(ctx *cli.Context) error {
 	return nil
 }
 
-func (call *callsCmd) list(ctx *cli.Context) error {
+func list(ctx *cli.Context) error {
+	c, _ := client.GetClient()
 	app := ctx.Args().Get(0)
 	params := apicall.GetAppsAppCallsParams{
 		App:     app,
@@ -150,7 +94,7 @@ func (call *callsCmd) list(ctx *cli.Context) error {
 
 	var resCalls []*models.Call
 	for {
-		resp, err := call.client.Call.GetAppsAppCalls(&params)
+		resp, err := c.Client.Call.GetAppsAppCalls(&params)
 		if err != nil {
 			switch e := err.(type) {
 			case *apicall.GetAppsAppCallsNotFound:
