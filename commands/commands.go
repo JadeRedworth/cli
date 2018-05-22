@@ -5,8 +5,10 @@ import (
 	"github.com/fnproject/cli/objects/app"
 	"github.com/fnproject/cli/objects/call"
 	"github.com/fnproject/cli/objects/context"
+	"github.com/fnproject/cli/objects/function"
 	"github.com/fnproject/cli/objects/log"
 	"github.com/fnproject/cli/objects/route"
+	"github.com/fnproject/cli/objects/server"
 	"github.com/fnproject/cli/run"
 	"github.com/urfave/cli"
 )
@@ -14,79 +16,108 @@ import (
 type cmd map[string]cli.Command
 
 var Commands = cmd{
-	"list":    ListCommand(),
+	"build":   BuildCommand(),
+	"bump":    common.BumpCommand(),
+	"call":    CallCommand(),
 	"create":  CreateCommand(),
 	"delete":  DeleteCommand(),
+	"deploy":  DeployCommand(),
+	"get":     GetCommand(),
+	"init":    InitCommand(),
+	"inspect": InspectCommand(),
+	"list":    ListCommand(),
+	"push":    PushCommand(),
+	"run":     run.RunCommand(),
+	"set":     SetCommand(),
+	"start":   StartCommand(),
+	"test":    TestCommand(),
 	"unset":   UnsetCommand(),
 	"update":  UpdateCommand(),
 	"use":     UseCommand(),
-	"inspect": InspectCommand(),
-	"call":    CallCommand(),
-	"set":     SetCommand(),
-	"get":     GetCommand(),
-	"build":   BuildCommand(),
-	"bump":    common.BumpCommand(),
-	"deploy":  DeployCommand(),
-	"push":    PushCommand(),
-	"run":     run.RunCommand(),
-	"test":    TestCommand(),
 	"version": VersionCommand(),
-	"start":   StartCommand(),
 }
 
-var CreateCmds = cmd{
-	"apps":    app.GetCreateAppCommand(),
-	"routes":  route.GetCreateRouteCommand(),
-	"context": context.GetCreateContextCommand(),
-}
-
-var DeleteCmds = cmd{
-	"apps":    app.GetDeleteAppCommand(),
-	"routes":  route.GetDeleteRouteCommand(),
-	"context": context.GetDeleteContextCommand(),
-}
-
-var ListCmds = cmd{
-	"apps":   app.GetListAppsCommand(),
-	"routes": route.GetListRoutesCommand(),
-	"calls":  call.GetListCallsCommand(),
+var BuildCmds = cmd{
+	"server":   server.Build(),
+	"function": function.Build(),
 }
 
 var CallCmds = cmd{
-	"routes": route.GetCallRoutesCommand(),
+	"routes": route.CallRoute(),
 }
 
-var UseCmds = cmd{
-	"context": context.GetUseContextCommand(),
+var CreateCmds = cmd{
+	"apps":    app.Create(),
+	"routes":  route.Create(),
+	"context": context.Create(),
 }
 
-var UnsetCmds = cmd{
-	"apps":    app.GetUnsetConfigAppsCommand(),
-	"routes":  route.GetUnsetConfigRoutesCommand(),
-	"context": context.GetUnsetContextCommand(),
+var ConfigListCmds = cmd{
+	"apps":   app.ListConfig(),
+	"routes": route.ListConfig(),
 }
 
-var UpdateCmds = cmd{
-	"apps":    app.GetUpdateAppCommand(),
-	"routes":  route.GetUpdateRouteCommand(),
-	"context": context.GetUseContextCommand(),
+var ConfigGetCmds = cmd{
+	"apps":   app.GetConfig(),
+	"routes": route.GetConfig(),
 }
 
-var InspectCmds = cmd{
-	"apps":   app.GetInspectAppsCommand(),
-	"routes": route.GetInspectRoutesCommand(),
+var ConfigSetCmds = cmd{
+	"apps":   app.SetConfig(),
+	"routes": route.SetConfig(),
+}
+
+var ConfigUnsetCmds = cmd{
+	"apps":   app.UnsetConfig(),
+	"routes": route.UnsetConfig(),
+}
+
+var DeleteCmds = cmd{
+	"apps":    app.Delete(),
+	"routes":  route.Delete(),
+	"context": context.Delete(),
 }
 
 var GetCmds = cmd{
-	"apps":   app.GetGetConfigAppsCommand(),
-	"routes": route.GetGetConfigRoutesCommand(),
-	"logs":   log.GetGetLogsCommand(),
-	"calls":  call.GetGetCallsCommand(),
+	"config": ConfigCommand("get"),
+	"logs":   log.Get(),
+	"calls":  call.Get(),
+}
+
+var InspectCmds = cmd{
+	"apps":   app.Inspect(),
+	"routes": route.Inspect(),
+}
+
+var ListCmds = cmd{
+	"config":  ConfigCommand("list"),
+	"apps":    app.List(),
+	"routes":  route.List(),
+	"calls":   call.List(),
+	"context": context.List(),
 }
 
 var SetCmds = cmd{
-	"apps":   app.GetSetConfigAppsCommnd(),
-	"routes": route.GetSetConfigRoutesCommand(),
+	"config": ConfigCommand("set"),
+}
+
+var StartCmds = cmd{
+	"server": server.Start(),
+}
+var UnsetCmds = cmd{
+	"config":  ConfigCommand("unset"),
+	"context": context.Unset(),
+}
+
+var UpdateCmds = cmd{
+	"apps":    app.Update(),
+	"routes":  route.Update(),
+	"context": context.Update(),
+	"server":  server.Update(),
+}
+
+var UseCmds = cmd{
+	"context": context.Use(),
 }
 
 func GetCommands(commands map[string]cli.Command) []cli.Command {

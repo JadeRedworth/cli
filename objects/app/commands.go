@@ -7,12 +7,13 @@ import (
 
 type app client.FnClient
 
-func GetCreateAppCommand() cli.Command {
+func Create() cli.Command {
 	return cli.Command{
 		Name:      "apps",
 		Usage:     "Create a new application",
+		Aliases:   []string{"a"},
 		ArgsUsage: "<app>",
-		Action:    createApp,
+		Action:    create,
 		Flags: []cli.Flag{
 			cli.StringSliceFlag{
 				Name:  "config",
@@ -22,11 +23,12 @@ func GetCreateAppCommand() cli.Command {
 	}
 }
 
-func GetListAppsCommand() cli.Command {
+func List() cli.Command {
 	return cli.Command{
-		Name:   "apps",
-		Usage:  "List all applications ",
-		Action: listApps,
+		Name:    "apps",
+		Usage:   "List all applications",
+		Aliases: []string{"a"},
+		Action:  list,
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "cursor",
@@ -41,29 +43,32 @@ func GetListAppsCommand() cli.Command {
 	}
 }
 
-func GetDeleteAppCommand() cli.Command {
+func Delete() cli.Command {
 	return cli.Command{
-		Name:   "apps",
-		Usage:  "Delete an application",
-		Action: deleteApps,
+		Name:    "apps",
+		Usage:   "Delete an application",
+		Aliases: []string{"a"},
+		Action:  delete,
 	}
 }
 
-func GetInspectAppsCommand() cli.Command {
+func Inspect() cli.Command {
 	return cli.Command{
 		Name:      "apps",
 		Usage:     "retrieve one or all apps properties",
+		Aliases:   []string{"a"},
 		ArgsUsage: "<app> [property.[key]]",
-		Action:    inspectApps,
+		Action:    inspect,
 	}
 }
 
-func GetUpdateAppCommand() cli.Command {
+func Update() cli.Command {
 	return cli.Command{
 		Name:      "apps",
 		Usage:     "update an application",
+		Aliases:   []string{"a"},
 		ArgsUsage: "<app>",
-		Action:    updateApps,
+		Action:    update,
 		Flags: []cli.Flag{
 			cli.StringSliceFlag{
 				Name:  "config,c",
@@ -73,38 +78,42 @@ func GetUpdateAppCommand() cli.Command {
 	}
 }
 
-func GetSetConfigAppsCommnd() cli.Command {
+func SetConfig() cli.Command {
 	return cli.Command{
 		Name:      "apps",
 		Usage:     "store a configuration key for this application",
+		Aliases:   []string{"a"},
 		ArgsUsage: "<app> <key> <value>",
-		Action:    configSetApps,
+		Action:    setConfig,
 	}
 }
 
-func GetListConfigAppsCommand() cli.Command {
+func ListConfig() cli.Command {
 	return cli.Command{
 		Name:      "apps",
 		Usage:     "list configuration key/value pairs for this application",
+		Aliases:   []string{"a"},
 		ArgsUsage: "<app>",
-		Action:    configListApps,
+		Action:    listConfig,
 	}
 }
 
-func GetGetConfigAppsCommand() cli.Command {
+func GetConfig() cli.Command {
 	return cli.Command{
 		Name:      "apps",
 		Usage:     "inspect configuration key for this application",
+		Aliases:   []string{"a"},
 		ArgsUsage: "<app> <key>",
-		Action:    configGetApps,
+		Action:    getConfig,
 	}
 }
 
-func GetUnsetConfigAppsCommand() cli.Command {
+func UnsetConfig() cli.Command {
 	return cli.Command{
 		Name:      "apps",
 		Usage:     "remove a configuration key for this application",
+		Aliases:   []string{"a"},
 		ArgsUsage: "<app> <key>",
-		Action:    configUnsetApps,
+		Action:    unsetConfig,
 	}
 }

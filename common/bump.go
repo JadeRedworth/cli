@@ -20,7 +20,7 @@ const (
 )
 
 var (
-	initialVersion = "0.0.1"
+	InitialVersion = "0.0.1"
 )
 
 func BumpCommand() cli.Command {
@@ -29,6 +29,7 @@ func BumpCommand() cli.Command {
 	return cli.Command{
 		Name:     "bump",
 		Usage:    "bump function version",
+		Aliases:  []string{"bm"},
 		Category: "DEVELOPMENT COMMANDS",
 		Flags:    flags,
 		Action:   cmd.bump,
@@ -108,9 +109,9 @@ func BumpIt(fpath string, vtype VType) (*FuncFile, error) {
 }
 
 func bumpVersion(funcfile *FuncFile, t VType) (*FuncFile, error) {
-	funcfile.Name = cleanImageName(funcfile.Name)
+	funcfile.Name = CleanImageName(funcfile.Name)
 	if funcfile.Version == "" {
-		funcfile.Version = initialVersion
+		funcfile.Version = InitialVersion
 		return funcfile, nil
 	}
 
@@ -139,7 +140,7 @@ func bumpVersion(funcfile *FuncFile, t VType) (*FuncFile, error) {
 // cleanImageName is intended to remove any trailing tag from the image name
 // since the version field conveys this information. More cleanup could be done
 // here in future if necessary.
-func cleanImageName(name string) string {
+func CleanImageName(name string) string {
 	slashParts := strings.Split(name, "/")
 	l := len(slashParts) - 1
 	if i := strings.Index(slashParts[l], ":"); i > -1 {

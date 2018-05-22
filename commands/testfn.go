@@ -31,6 +31,7 @@ func TestCommand() cli.Command {
 	return cli.Command{
 		Name:     "test",
 		Usage:    "run functions test if present",
+		Aliases:  []string{"t"},
 		Category: "DEVELOPMENT COMMANDS",
 		Flags:    cmd.flags(),
 		Action:   cmd.test,

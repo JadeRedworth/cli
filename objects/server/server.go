@@ -1,55 +1,112 @@
-// This command builds a custom fn server with extensions compiled into it.
-//
-// NOTES:
-// * We could just add extensions in the imports, but then there's no way to order them or potentially add extra config (although config should almost always be via env vars)
-
-package main
+package server
 
 import (
 	"errors"
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"os"
+	"os/exec"
+	"os/signal"
+	"syscall"
 
 	"github.com/fnproject/cli/common"
+	"github.com/go-yaml/yaml"
 	"github.com/urfave/cli"
-	yaml "gopkg.in/yaml.v2"
 )
 
-func buildServer() cli.Command {
-	cmd := buildServerCmd{}
-	flags := append([]cli.Flag{}, cmd.flags()...)
-	return cli.Command{
-		Name:   "build-server",
-		Usage:  "build custom fn server",
-		Flags:  flags,
-		Action: cmd.buildServer,
+func start(c *cli.Context) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatalln("Getwd failed:", err)
+	}
+	args := []string{"run", "--rm", "-i",
+		"--name", "fnserver",
+		"-v", fmt.Sprintf("%s/data:/app/data", wd),
+		"-v", "/var/run/docker.sock:/var/run/docker.sock",
+		"--privileged",
+		"-p", fmt.Sprintf("%d:8080", c.Int("port")),
+		"--entrypoint", "./fnserver",
+	}
+	if c.String("log-level") != "" {
+		args = append(args, "-e", fmt.Sprintf("FN_LOG_LEVEL=%v", c.String("log-level")))
+	}
+	if c.String("env-file") != "" {
+		args = append(args, "--env-file", c.String("env-file"))
+	}
+	if c.Bool("detach") {
+		args = append(args, "-d")
+	}
+	args = append(args, common.FunctionsDockerImage)
+	cmd := exec.Command("docker", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Start()
+	if err != nil {
+		log.Fatalln("starting command failed:", err)
+	}
+
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+	// catch ctrl-c and kill
+	sigC := make(chan os.Signal, 2)
+	signal.Notify(sigC, os.Interrupt, syscall.SIGTERM)
+
+	for {
+		select {
+		case <-sigC:
+			log.Println("interrupt caught, exiting")
+			err = cmd.Process.Signal(syscall.SIGTERM)
+			if err != nil {
+				log.Println("error: could not kill process:", err)
+				return err
+			}
+		case err := <-done:
+			if err != nil {
+				log.Println("error: processed finished with error", err)
+			}
+		}
+		return err
 	}
 }
 
-type buildServerCmd struct {
-	verbose bool
-	noCache bool
-}
-
-func (b *buildServerCmd) flags() []cli.Flag {
-	return []cli.Flag{
-		cli.BoolFlag{
-			Name:        "v",
-			Usage:       "verbose mode",
-			Destination: &b.verbose,
-		},
-		cli.BoolFlag{
-			Name:        "no-cache",
-			Usage:       "Don't use docker cache",
-			Destination: &b.noCache,
-		},
-		cli.StringFlag{
-			Name:  "tag,t",
-			Usage: "image name and optional tag",
-		},
+func update(c *cli.Context) error {
+	args := []string{"pull",
+		common.FunctionsDockerImage,
 	}
+	cmd := exec.Command("docker", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err := cmd.Start()
+	if err != nil {
+		log.Fatalln("starting command failed:", err)
+	}
+
+	done := make(chan error, 1)
+	go func() {
+		done <- cmd.Wait()
+	}()
+	// catch ctrl-c and kill
+	sigC := make(chan os.Signal, 2)
+	signal.Notify(sigC, os.Interrupt, syscall.SIGTERM)
+	select {
+	case <-sigC:
+		log.Println("interrupt caught, exiting")
+		err = cmd.Process.Kill()
+		if err != nil {
+			log.Println("error: could not kill process")
+		}
+	case err := <-done:
+		if err != nil {
+			log.Println("processed finished with error:", err)
+		} else {
+			log.Println("process finished gracefully")
+		}
+	}
+	return nil
 }
 
 // steps:
@@ -59,7 +116,7 @@ func (b *buildServerCmd) flags() []cli.Flag {
 // * Generate a Dockerfile that gets all the extensions (using dep)
 // • ‎then generate a main.go with extensions
 // • ‎compile, throw in another container like main dockerfile
-func (b *buildServerCmd) buildServer(c *cli.Context) error {
+func (b *buildServerCmd) Build(c *cli.Context) error {
 
 	if c.String("tag") == "" {
 		return errors.New("docker tag required")

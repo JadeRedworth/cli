@@ -15,6 +15,7 @@ func PushCommand() cli.Command {
 	return cli.Command{
 		Name:     "push",
 		Usage:    "push function to Docker Hub",
+		Aliases:  []string{"p"},
 		Category: "DEVELOPMENT COMMANDS",
 		Flags:    flags,
 		Action:   cmd.push,

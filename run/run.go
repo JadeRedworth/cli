@@ -30,6 +30,7 @@ func RunCommand() cli.Command {
 	return cli.Command{
 		Name:     "run",
 		Usage:    "run a function locally",
+		Aliases:  []string{"r"},
 		Category: "DEVELOPMENT COMMANDS",
 		Flags:    append(GetRunFlags(), []cli.Flag{}...),
 		Action:   r.run,

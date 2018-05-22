@@ -149,7 +149,7 @@ func storeFuncfile(path string, ff *FuncFile) error {
 	case ".json":
 		return encodeFuncfileJSON(path, ff)
 	case ".yaml", ".yml":
-		return encodeFuncfileYAML(path, ff)
+		return EncodeFuncfileYAML(path, ff)
 	}
 	return errUnexpectedFileFormat
 }
@@ -185,7 +185,7 @@ func encodeFuncfileJSON(path string, ff *FuncFile) error {
 	return json.NewEncoder(f).Encode(ff)
 }
 
-func encodeFuncfileYAML(path string, ff *FuncFile) error {
+func EncodeFuncfileYAML(path string, ff *FuncFile) error {
 	b, err := yaml.Marshal(ff)
 	if err != nil {
 		return fmt.Errorf("could not encode function file. Error: %v", err)

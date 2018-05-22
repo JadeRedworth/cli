@@ -17,7 +17,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-func listApps(c *cli.Context) error {
+func list(c *cli.Context) error {
 	a, _ := client.GetClient()
 	params := &apiapps.GetAppsParams{Context: context.Background()}
 	var resApps []*models.App
@@ -59,7 +59,7 @@ func listApps(c *cli.Context) error {
 	return nil
 }
 
-func createApp(c *cli.Context) error {
+func create(c *cli.Context) error {
 	a, _ := client.GetClient()
 	body := &models.AppWrapper{App: &models.App{
 		Name:   c.Args().Get(0),
@@ -86,7 +86,7 @@ func createApp(c *cli.Context) error {
 	return nil
 }
 
-func updateApps(c *cli.Context) error {
+func update(c *cli.Context) error {
 	appName := c.Args().First()
 
 	patchedApp := &models.App{
@@ -102,7 +102,7 @@ func updateApps(c *cli.Context) error {
 	return nil
 }
 
-func configSetApps(c *cli.Context) error {
+func setConfig(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	key := c.Args().Get(1)
 	value := c.Args().Get(2)
@@ -121,7 +121,7 @@ func configSetApps(c *cli.Context) error {
 	return nil
 }
 
-func configGetApps(c *cli.Context) error {
+func getConfig(c *cli.Context) error {
 	a, _ := client.GetClient()
 	appName := c.Args().Get(0)
 	key := c.Args().Get(1)
@@ -145,7 +145,7 @@ func configGetApps(c *cli.Context) error {
 	return nil
 }
 
-func configListApps(c *cli.Context) error {
+func listConfig(c *cli.Context) error {
 	a, _ := client.GetClient()
 	appName := c.Args().Get(0)
 
@@ -165,7 +165,7 @@ func configListApps(c *cli.Context) error {
 	return nil
 }
 
-func configUnsetApps(c *cli.Context) error {
+func unsetConfig(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	key := c.Args().Get(1)
 
@@ -205,7 +205,7 @@ func patchApp(appName string, app *models.App) error {
 	return nil
 }
 
-func inspectApps(c *cli.Context) error {
+func inspect(c *cli.Context) error {
 	a, _ := client.GetClient()
 	if c.Args().Get(0) == "" {
 		return errors.New("missing app name after the inspect command")
@@ -258,7 +258,7 @@ func inspectApps(c *cli.Context) error {
 	return nil
 }
 
-func deleteApps(c *cli.Context) error {
+func delete(c *cli.Context) error {
 	a, _ := client.GetClient()
 	appName := c.Args().First()
 	if appName == "" {

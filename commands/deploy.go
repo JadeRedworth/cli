@@ -24,6 +24,7 @@ func DeployCommand() cli.Command {
 	return cli.Command{
 		Name:     "deploy",
 		Usage:    "deploys a function to the functions server. (bumps, build, pushes and updates route)",
+		Aliases:  []string{"dp"},
 		Category: "DEVELOPMENT COMMANDS",
 		Flags:    flags,
 		Action:   cmd.deploy,

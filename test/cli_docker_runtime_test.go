@@ -1,8 +1,9 @@
 package test
 
 import (
-	"github.com/fnproject/cli/testharness"
 	"testing"
+
+	"github.com/fnproject/cli/testharness"
 )
 
 const dockerFile = `FROM golang:latest
@@ -56,6 +57,6 @@ func TestDockerRuntimeBuildFailsWithNoDockerfile(t *testing.T) {
 	tctx.WithFile("func.yaml", funcYaml, 0644)
 	tctx.WithFile("func.go", goFuncDotGo, 0644)
 
-	tctx.Fn("--verbose", "build").AssertFailed().AssertStderrContains("Dockerfile does not exist")
+	tctx.Fn("--verbose", "build", "function").AssertFailed().AssertStderrContains("Dockerfile does not exist")
 
 }

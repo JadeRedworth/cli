@@ -120,7 +120,7 @@ func list(c *cli.Context) error {
 	return nil
 }
 
-func call(c *cli.Context) error {
+func Call(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	route := cleanRoutePath(c.Args().Get(1))
 
@@ -134,7 +134,7 @@ func call(c *cli.Context) error {
 	return client.CallFN(u.String(), content, os.Stdout, c.String("method"), c.StringSlice("e"), c.String("content-type"), c.Bool("display-call-id"))
 }
 
-func routeWithFlags(c *cli.Context, rt *fnmodels.Route) {
+func RouteWithFlags(c *cli.Context, rt *fnmodels.Route) {
 	if rt.Image == "" {
 		if i := c.String("image"); i != "" {
 			rt.Image = i
@@ -239,7 +239,7 @@ func create(c *cli.Context) error {
 	rt.Path = route
 	rt.Image = c.Args().Get(2)
 
-	routeWithFlags(c, rt)
+	RouteWithFlags(c, rt)
 
 	if rt.Path == "" {
 		return errors.New("route path is missing")
@@ -284,62 +284,13 @@ func postRoute(c *cli.Context, appName string, rt *fnmodels.Route) error {
 	return nil
 }
 
-func patchRoute(appName, routePath string, rt *fnmodels.Route) error {
-	r, _ := client.GetClient()
-	if rt.Image != "" {
-		err := common.ValidateImageName(rt.Image)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err := r.Client.Routes.PatchAppsAppRoutesRoute(&apiroutes.PatchAppsAppRoutesRouteParams{
-		Context: context.Background(),
-		App:     appName,
-		Route:   routePath,
-		Body:    &fnmodels.RouteWrapper{Route: rt},
-	})
-
-	if err != nil {
-		switch e := err.(type) {
-		case *apiroutes.PatchAppsAppRoutesRouteBadRequest:
-			return fmt.Errorf("%s", e.Payload.Error.Message)
-		case *apiroutes.PatchAppsAppRoutesRouteNotFound:
-			return fmt.Errorf("%s", e.Payload.Error.Message)
-		default:
-			return err
-		}
-	}
-
-	return nil
-}
-
-func PutRoute(appName, routePath string, rt *fnmodels.Route) error {
-	r, _ := client.GetClient()
-	_, err := r.Client.Routes.PutAppsAppRoutesRoute(&apiroutes.PutAppsAppRoutesRouteParams{
-		Context: context.Background(),
-		App:     appName,
-		Route:   routePath,
-		Body:    &fnmodels.RouteWrapper{Route: rt},
-	})
-	if err != nil {
-		switch e := err.(type) {
-		case *apiroutes.PutAppsAppRoutesRouteBadRequest:
-			return fmt.Errorf("%s", e.Payload.Error.Message)
-		default:
-			return err
-		}
-	}
-	return nil
-}
-
 func update(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	route := cleanRoutePath(c.Args().Get(1))
 
 	rt := &fnmodels.Route{}
 
-	routeWithFlags(c, rt)
+	RouteWithFlags(c, rt)
 
 	err := patchRoute(appName, route, rt)
 	if err != nil {
@@ -350,7 +301,7 @@ func update(c *cli.Context) error {
 	return nil
 }
 
-func configSet(c *cli.Context) error {
+func setConfig(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	route := cleanRoutePath(c.Args().Get(1))
 	key := c.Args().Get(2)
@@ -371,7 +322,7 @@ func configSet(c *cli.Context) error {
 	return nil
 }
 
-func configGet(c *cli.Context) error {
+func getConfig(c *cli.Context) error {
 	r, _ := client.GetClient()
 	appName := c.Args().Get(0)
 	route := cleanRoutePath(c.Args().Get(1))
@@ -397,7 +348,7 @@ func configGet(c *cli.Context) error {
 	return nil
 }
 
-func configList(c *cli.Context) error {
+func listConfig(c *cli.Context) error {
 	r, _ := client.GetClient()
 	appName := c.Args().Get(0)
 	route := cleanRoutePath(c.Args().Get(1))
@@ -419,7 +370,7 @@ func configList(c *cli.Context) error {
 	return nil
 }
 
-func configUnset(c *cli.Context) error {
+func unsetConfig(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	route := cleanRoutePath(c.Args().Get(1))
 	key := c.Args().Get(2)
@@ -508,5 +459,54 @@ func delete(c *cli.Context) error {
 	}
 
 	fmt.Println(appName, route, "deleted")
+	return nil
+}
+
+func patchRoute(appName, routePath string, rt *fnmodels.Route) error {
+	r, _ := client.GetClient()
+	if rt.Image != "" {
+		err := common.ValidateImageName(rt.Image)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err := r.Client.Routes.PatchAppsAppRoutesRoute(&apiroutes.PatchAppsAppRoutesRouteParams{
+		Context: context.Background(),
+		App:     appName,
+		Route:   routePath,
+		Body:    &fnmodels.RouteWrapper{Route: rt},
+	})
+
+	if err != nil {
+		switch e := err.(type) {
+		case *apiroutes.PatchAppsAppRoutesRouteBadRequest:
+			return fmt.Errorf("%s", e.Payload.Error.Message)
+		case *apiroutes.PatchAppsAppRoutesRouteNotFound:
+			return fmt.Errorf("%s", e.Payload.Error.Message)
+		default:
+			return err
+		}
+	}
+
+	return nil
+}
+
+func PutRoute(appName, routePath string, rt *fnmodels.Route) error {
+	r, _ := client.GetClient()
+	_, err := r.Client.Routes.PutAppsAppRoutesRoute(&apiroutes.PutAppsAppRoutesRouteParams{
+		Context: context.Background(),
+		App:     appName,
+		Route:   routePath,
+		Body:    &fnmodels.RouteWrapper{Route: rt},
+	})
+	if err != nil {
+		switch e := err.(type) {
+		case *apiroutes.PutAppsAppRoutesRouteBadRequest:
+			return fmt.Errorf("%s", e.Payload.Error.Message)
+		default:
+			return err
+		}
+	}
 	return nil
 }

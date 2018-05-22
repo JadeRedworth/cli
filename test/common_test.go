@@ -1,6 +1,10 @@
-package main
+package test
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/fnproject/cli/common"
+)
 
 func TestValidateImageName(t *testing.T) {
 	testCases := []struct {
@@ -15,7 +19,7 @@ func TestValidateImageName(t *testing.T) {
 	for _, c := range testCases {
 		t.Run(c.name, func(t *testing.T) {
 			errString := ""
-			if err := validateImageName(c.name); err != nil {
+			if err := common.ValidateImageName(c.name); err != nil {
 				errString = err.Error()
 			}
 			if c.expectedErr != errString {

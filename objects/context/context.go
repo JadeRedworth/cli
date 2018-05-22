@@ -22,7 +22,7 @@ var fileExtension = ".yaml"
 
 type ContextMap config.ContextMap
 
-func createContext(c *cli.Context) error {
+func create(c *cli.Context) error {
 	context := c.Args().Get(0)
 
 	err := ValidateContextName(context)
@@ -77,7 +77,7 @@ func createContext(c *cli.Context) error {
 	return nil
 }
 
-func deleteCtx(c *cli.Context) error {
+func delete(c *cli.Context) error {
 	context := c.Args().Get(0)
 
 	if check, err := checkContextFileExists(context); !check {
@@ -105,7 +105,7 @@ func deleteCtx(c *cli.Context) error {
 	return nil
 }
 
-func useCtx(c *cli.Context) error {
+func use(c *cli.Context) error {
 	context := c.Args().Get(0)
 
 	if check, err := checkContextFileExists(context); !check {
@@ -129,7 +129,7 @@ func useCtx(c *cli.Context) error {
 	return nil
 }
 
-func unsetCtx(c *cli.Context) error {
+func unset(c *cli.Context) error {
 	if currentContext := viper.GetString(config.CurrentContext); currentContext == "" {
 		return errors.New("no context currently in use")
 	}
@@ -143,7 +143,7 @@ func unsetCtx(c *cli.Context) error {
 	return nil
 }
 
-func listContext(c *cli.Context) error {
+func list(c *cli.Context) error {
 	currentContext := viper.GetString(config.CurrentContext)
 	files, err := getAvailableContexts()
 	if err != nil {
@@ -177,7 +177,7 @@ func listContext(c *cli.Context) error {
 	return w.Flush()
 }
 
-func (ctxMap *ContextMap) updateCtx(c *cli.Context) error {
+func (ctxMap *ContextMap) update(c *cli.Context) error {
 	key := c.Args().Get(0)
 	value := c.Args().Get(1)
 	err := ctxMap.Set(key, value)

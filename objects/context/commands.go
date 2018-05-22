@@ -2,12 +2,13 @@ package context
 
 import "github.com/urfave/cli"
 
-func GetCreateContextCommand() cli.Command {
+func Create() cli.Command {
 	return cli.Command{
 		Name:      "context",
 		Usage:     "create a new context",
+		Aliases:   []string{"ctx"},
 		ArgsUsage: "<context>",
-		Action:    createContext,
+		Action:    create,
 		Flags: []cli.Flag{
 			cli.StringFlag{
 				Name:  "provider",
@@ -25,45 +26,51 @@ func GetCreateContextCommand() cli.Command {
 	}
 }
 
-func GetListContextCommand() cli.Command {
+func List() cli.Command {
 	return cli.Command{
-		Name:   "contexts",
-		Usage:  "list contexts",
-		Action: listContext,
+		Name:    "context",
+		Usage:   "list contexts",
+		Aliases: []string{"ctx"},
+		Action:  list,
 	}
 }
 
-func GetDeleteContextCommand() cli.Command {
+func Delete() cli.Command {
 	return cli.Command{
 		Name:      "context",
 		Usage:     "delete a context",
+		Aliases:   []string{"ctx"},
 		ArgsUsage: "<context>",
-		Action:    deleteCtx,
+		Action:    delete,
 	}
 }
 
-func (ctxMap ContextMap) GetUpdateContextCommand() cli.Command {
+func Update() cli.Command {
+	ctxMap := ContextMap{}
 	return cli.Command{
 		Name:      "context",
 		Usage:     "update context files",
+		Aliases:   []string{"ctx"},
 		ArgsUsage: "<key> <value>",
-		Action:    ctxMap.updateCtx,
+		Action:    ctxMap.update,
 	}
 }
 
-func GetUseContextCommand() cli.Command {
+func Use() cli.Command {
 	return cli.Command{
 		Name:      "context",
 		Usage:     "use context for future invocations",
+		Aliases:   []string{"ctx"},
 		ArgsUsage: "<context>",
-		Action:    useCtx,
+		Action:    use,
 	}
 }
 
-func GetUnsetContextCommand() cli.Command {
+func Unset() cli.Command {
 	return cli.Command{
-		Name:   "context",
-		Usage:  "unset current-context",
-		Action: unsetCtx,
+		Name:    "context",
+		Usage:   "unset current-context",
+		Aliases: []string{"ctx"},
+		Action:  unset,
 	}
 }

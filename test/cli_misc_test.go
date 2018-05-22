@@ -2,12 +2,13 @@ package test
 
 import (
 	"fmt"
-	"github.com/fnproject/cli/testharness"
 	"log"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/fnproject/cli/testharness"
 )
 
 func TestFnVersion(t *testing.T) {
@@ -75,8 +76,8 @@ func TestSettingMillisWorks(t *testing.T) {
 	h.WithEnv("FN_REGISTRY", "some_random_registry")
 
 	appName := h.NewAppName()
-	h.Fn("apps", "create", appName).AssertSuccess()
-	res := h.Fn("apps", "list")
+	h.Fn("create", "apps", appName).AssertSuccess()
+	res := h.Fn("list", "apps")
 
 	if !strings.Contains(res.Stdout, fmt.Sprintf("%s\n", appName)) {
 		t.Fatalf("Expecting app list to contain app name , got %v", res)
@@ -91,13 +92,13 @@ func TestSettingMillisWorks(t *testing.T) {
 
 	h.Fn("--verbose", "deploy", "--app", appName, "--local").AssertSuccess()
 	h.Fn("call", appName, funcName).AssertSuccess()
-	inspectRes := h.Fn("routes", "inspect", appName, funcName)
+	inspectRes := h.Fn("inspect", "routes", appName, funcName)
 	inspectRes.AssertSuccess()
 	if !strings.Contains(inspectRes.Stdout, `"cpus": "50m"`) {
 		t.Errorf("Expecting fn inspect to contain CPU %v", inspectRes)
 	}
 
-	h.Fn("routes", "create", appName, "/another", "--image", "some_random_registry/"+funcName+":0.0.2").AssertSuccess()
+	h.Fn("cerate", "routes", appName, "/another", "--image", "some_random_registry/"+funcName+":0.0.2").AssertSuccess()
 
 	h.Fn("call", appName, "/another").AssertSuccess()
 }
@@ -109,20 +110,25 @@ func TestAllMainCommandsExist(t *testing.T) {
 	defer h.Cleanup()
 
 	testCommands := []string{
-		"init",
-		"apps",
-		"routes",
-		"images",
-		"lambda",
-		"version",
 		"build",
 		"bump",
-		"deploy",
-		"run",
-		"push",
-		"logs",
-		"calls",
 		"call",
+		"create",
+		"delete",
+		"deploy",
+		"get",
+		"init",
+		"inspect",
+		"list",
+		"push",
+		"run",
+		"set",
+		"start",
+		"test",
+		"unset",
+		"update",
+		"use",
+		"version",
 	}
 
 	for _, cmd := range testCommands {
@@ -190,11 +196,11 @@ func TestBump(t *testing.T) {
 	h.Fn("deploy", "--local", "--app", appName).AssertSuccess()
 	expectFuncYamlVersion("1.1.1")
 
-	h.Fn("routes", "i", appName, fnName).AssertSuccess().AssertStdoutContains(fmt.Sprintf(`%s:1.1.1`, fnName))
+	h.Fn("i", "routes", appName, fnName).AssertSuccess().AssertStdoutContains(fmt.Sprintf(`%s:1.1.1`, fnName))
 
 	h.Fn("deploy", "--local", "--no-bump", "--app", appName).AssertSuccess()
 	expectFuncYamlVersion("1.1.1")
 
-	h.Fn("routes", "i", appName, fnName).AssertSuccess().AssertStdoutContains(fmt.Sprintf(`%s:1.1.1`, fnName))
+	h.Fn("i", "routes", appName, fnName).AssertSuccess().AssertStdoutContains(fmt.Sprintf(`%s:1.1.1`, fnName))
 
 }

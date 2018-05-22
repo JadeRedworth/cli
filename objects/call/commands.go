@@ -2,19 +2,21 @@ package call
 
 import "github.com/urfave/cli"
 
-func GetGetCallsCommand() cli.Command {
+func Get() cli.Command {
 	return cli.Command{
 		Name:      "calls",
 		Usage:     "get function call info per app",
+		Aliases:   []string{"cl"},
 		ArgsUsage: "<app> <call-id>",
 		Action:    get,
 	}
 }
 
-func GetListCallsCommand() cli.Command {
+func List() cli.Command {
 	return cli.Command{
 		Name:      "calls",
 		Usage:     "list all calls for the specific app. Route is optional",
+		Aliases:   []string{"cl"},
 		ArgsUsage: "<app>",
 		Action:    list,
 		Flags: []cli.Flag{

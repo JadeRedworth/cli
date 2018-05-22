@@ -2,30 +2,33 @@ package route
 
 import "github.com/urfave/cli"
 
-func GetCallRoutesCommand() cli.Command {
+func CallRoutes() cli.Command {
 	return cli.Command{
 		Name:      "routes",
 		Usage:     "call a route",
+		Aliases:   []string{"rt"},
 		ArgsUsage: "<app> </path> [image]",
 		Action:    Call,
 		Flags:     callFnFlags,
 	}
 }
 
-func GetCreateRouteCommand() cli.Command {
+func Create() cli.Command {
 	return cli.Command{
 		Name:      "routes",
 		Usage:     "Create a route in an application",
+		Aliases:   []string{"rt"},
 		ArgsUsage: "<app> </path>",
 		Action:    create,
 		Flags:     RouteFlags,
 	}
 }
 
-func GetListRoutesCommand() cli.Command {
+func List() cli.Command {
 	return cli.Command{
 		Name:      "routes",
 		Usage:     "list routes for `app`",
+		Aliases:   []string{"rt"},
 		ArgsUsage: "<app>",
 		Action:    list,
 		Flags: []cli.Flag{
@@ -42,74 +45,81 @@ func GetListRoutesCommand() cli.Command {
 	}
 }
 
-func GetDeleteRouteCommand() cli.Command {
+func Delete() cli.Command {
 	return cli.Command{
 		Name:      "routes",
 		Usage:     "Delete a route from an application `app`",
+		Aliases:   []string{"rt"},
 		ArgsUsage: "<app> </path>",
 		Action:    delete,
 	}
 }
 
-func GetInspectRoutesCommand() cli.Command {
+func Inspect() cli.Command {
 	return cli.Command{
 		Name:      "routes",
 		Usage:     "retrieve one or all routes properties",
+		Aliases:   []string{"rt"},
 		ArgsUsage: "<app> </path> [property.[key]]",
 		Action:    inspect,
 	}
 }
 
-func GetGetConfigRoutesCommand() cli.Command {
+func Update() cli.Command {
 	return cli.Command{
 		Name:      "routes",
-		Usage:     "inspect configuration key for this route",
-		ArgsUsage: "<app> </path> <key>",
-		Action:    configGet,
-	}
-}
-func GetSetConfigRoutesCommand() cli.Command {
-	return cli.Command{
-		Name:      "routes",
-		Usage:     "store a configuration key for this route",
-		ArgsUsage: "<app> </path> <key> <value>",
-		Action:    configSet,
-	}
-}
-func GetListConfigRoutesCommand() cli.Command {
-	return cli.Command{
-		Name:      "routes",
-		Usage:     "list configuration key/value pairs for this route",
-		ArgsUsage: "<app> </path>",
-		Action:    configList,
-	}
-}
-func GetUnsetConfigRoutesCommand() cli.Command {
-	return cli.Command{
-		Name:      "routes",
-		Usage:     "remove a configuration key for this route",
-		ArgsUsage: "<app> </path> <key>",
-		Action:    configUnset,
-	}
-}
-
-func GetUpdateRouteCommand() cli.Command {
-	return cli.Command{
-		Name:      "routes",
-		Aliases:   []string{"u"},
 		Usage:     "Update a Route in an `app`",
+		Aliases:   []string{"rt"},
 		ArgsUsage: "<app> </path>",
 		Action:    update,
 		Flags:     updateRouteFlags,
 	}
 }
 
-func Call() cli.Command {
+func CallRoute() cli.Command {
 	return cli.Command{
 		Name:      "call",
 		Usage:     "call a remote function",
+		Aliases:   []string{"rt"},
 		ArgsUsage: "<app> </path>",
 		Flags:     callFnFlags,
-		Action:    call,
+		Action:    Call,
+	}
+}
+
+func GetConfig() cli.Command {
+	return cli.Command{
+		Name:      "routes",
+		Usage:     "inspect configuration key for this route",
+		Aliases:   []string{"rt"},
+		ArgsUsage: "<app> </path> <key>",
+		Action:    getConfig,
+	}
+}
+func SetConfig() cli.Command {
+	return cli.Command{
+		Name:      "routes",
+		Usage:     "store a configuration key for this route",
+		Aliases:   []string{"rt"},
+		ArgsUsage: "<app> </path> <key> <value>",
+		Action:    setConfig,
+	}
+}
+func ListConfig() cli.Command {
+	return cli.Command{
+		Name:      "routes",
+		Usage:     "list configuration key/value pairs for this route",
+		Aliases:   []string{"rt"},
+		ArgsUsage: "<app> </path>",
+		Action:    listConfig,
+	}
+}
+func UnsetConfig() cli.Command {
+	return cli.Command{
+		Name:      "routes",
+		Usage:     "remove a configuration key for this route",
+		Aliases:   []string{"rt"},
+		ArgsUsage: "<app> </path> <key>",
+		Action:    unsetConfig,
 	}
 }

@@ -1,4 +1,4 @@
-package core
+package commands
 
 /*
  usage: fn init --help
@@ -69,7 +69,7 @@ func initFlags(a *initFnCmd) []cli.Flag {
 			Name:        "version",
 			Usage:       "set initial function version",
 			Destination: &a.ff.Version,
-			Value:       initialVersion,
+			Value:       common.InitialVersion,
 		},
 	}
 
@@ -84,12 +84,14 @@ func langsList() string {
 	return strings.Join(allLangs, ", ")
 }
 
-func initFn() cli.Command {
+func InitCommand() cli.Command {
 	a := &initFnCmd{ff: &common.FuncFile{}}
 
 	return cli.Command{
 		Name:        "init",
 		Usage:       "create a local func.yaml file",
+		Category:    "DEVELOPMENT COMMANDS",
+		Aliases:     []string{"in"},
 		Description: "Creates a func.yaml file in the current directory.",
 		ArgsUsage:   "[FUNCTION_NAME]",
 		Action:      a.init,
@@ -101,13 +103,13 @@ func (a *initFnCmd) init(c *cli.Context) error {
 	wd := common.GetWd()
 
 	var rt models.Route
-	routeWithFlags(c, &rt)
+	route.RouteWithFlags(c, &rt)
 	a.bindRoute(&rt)
 
 	runtimeSpecified := a.ff.Runtime != ""
 	if runtimeSpecified {
 		// go no further if the specified runtime is not supported
-		if a.ff.Runtime != funcfileDockerRuntime && langs.GetLangHelper(a.ff.Runtime) == nil {
+		if a.ff.Runtime != common.FuncfileDockerRuntime && langs.GetLangHelper(a.ff.Runtime) == nil {
 			return fmt.Errorf("Init does not support the '%s' runtime.", a.ff.Runtime)
 		}
 	}
@@ -118,7 +120,7 @@ func (a *initFnCmd) init(c *cli.Context) error {
 		fmt.Printf("Creating function at: /%s\n", path)
 		dir := filepath.Join(wd, path)
 		// check if dir exists, if it does, then we can't create function
-		if exists(dir) {
+		if common.Exists(dir) {
 			if !a.force {
 				return fmt.Errorf("directory %s already exists, cannot init function", dir)
 			}
@@ -137,7 +139,7 @@ func (a *initFnCmd) init(c *cli.Context) error {
 
 	if !a.force {
 		_, ff, err := common.LoadFuncfile()
-		if _, ok := err.(*notFoundError); !ok && err != nil {
+		if _, ok := err.(*common.NotFoundError); !ok && err != nil {
 			return err
 		}
 		if ff != nil {
@@ -152,14 +154,14 @@ func (a *initFnCmd) init(c *cli.Context) error {
 
 	// TODO: why don't we treat "docker" runtime as just another language helper? Then can get rid of several Docker
 	// specific if/else's like this one.
-	if runtimeSpecified && a.ff.Runtime != funcfileDockerRuntime {
+	if runtimeSpecified && a.ff.Runtime != common.FuncfileDockerRuntime {
 		err := a.generateBoilerplate()
 		if err != nil {
 			return err
 		}
 	}
 
-	if err := encodeFuncfileYAML("func.yaml", a.ff); err != nil {
+	if err := common.EncodeFuncfileYAML("func.yaml", a.ff); err != nil {
 		return err
 	}
 	fmt.Println("func.yaml created.")
@@ -202,9 +204,9 @@ func (a *initFnCmd) bindRoute(rt *models.Route) {
 	}
 }
 
-// validateFuncName checks if the func name is valid, the name can't contain a colon and
+// ValidateFuncName checks if the func name is valid, the name can't contain a colon and
 // must be all lowercase
-func validateFuncName(name string) error {
+func ValidateFuncName(name string) error {
 	if strings.Contains(name, ":") {
 		return errors.New("function name cannot contain a colon")
 	}
@@ -223,17 +225,17 @@ func (a *initFnCmd) BuildFuncFile(c *cli.Context) error {
 		a.ff.Name = strings.ToLower(filepath.Base(wd))
 	}
 
-	if err = validateFuncName(a.ff.Name); err != nil {
+	if err = ValidateFuncName(a.ff.Name); err != nil {
 		return err
 	}
 
 	//if Dockerfile present, use 'docker' as 'runtime'
-	if exists("Dockerfile") {
+	if common.Exists("Dockerfile") {
 		fmt.Println("Dockerfile found. Using runtime 'docker'.")
-		a.ff.Runtime = funcfileDockerRuntime
+		a.ff.Runtime = common.FuncfileDockerRuntime
 		return nil
 	}
-	if a.ff.Runtime == funcfileDockerRuntime {
+	if a.ff.Runtime == common.FuncfileDockerRuntime {
 		return errors.New("function file runtime is 'docker', but no Dockerfile exists")
 	}
 
@@ -316,7 +318,7 @@ func detectRuntime(path string) (langs.LangHelper, error) {
 			)
 		}
 		for _, filename := range filenames {
-			if exists(filename) {
+			if common.Exists(filename) {
 				return h, nil
 			}
 		}

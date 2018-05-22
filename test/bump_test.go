@@ -1,7 +1,9 @@
-package main
+package test
 
 import (
 	"testing"
+
+	"github.com/fnproject/cli/common"
 )
 
 func TestCleanImageName(t *testing.T) {
@@ -15,7 +17,7 @@ func TestCleanImageName(t *testing.T) {
 	}
 	for _, c := range testCases {
 		t.Run(c.input, func(t *testing.T) {
-			output := cleanImageName(c.input)
+			output := common.CleanImageName(c.input)
 			if output != c.expected {
 				t.Fatalf("Expected '%s' but got '%s'", c.expected, output)
 			}

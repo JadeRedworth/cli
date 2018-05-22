@@ -15,6 +15,7 @@ func VersionCommand() cli.Command {
 	return cli.Command{
 		Name:     "version",
 		Usage:    "displays cli and server versions",
+		Aliases:  []string{"v"},
 		Category: "OTHER COMMANDS",
 		Action:   versionCMD,
 	}
