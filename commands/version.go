@@ -13,11 +13,10 @@ var Version = "0.4.92"
 
 func VersionCommand() cli.Command {
 	return cli.Command{
-		Name:     "version",
-		Usage:    "displays cli and server versions",
-		Aliases:  []string{"v"},
-		Category: "OTHER COMMANDS",
-		Action:   versionCMD,
+		Name:    "version",
+		Usage:   "displays cli and server versions",
+		Aliases: []string{"v"},
+		Action:  versionCMD,
 	}
 }
 
