@@ -98,7 +98,7 @@ func TestSettingMillisWorks(t *testing.T) {
 		t.Errorf("Expecting fn inspect to contain CPU %v", inspectRes)
 	}
 
-	h.Fn("cerate", "routes", appName, "/another", "--image", "some_random_registry/"+funcName+":0.0.2").AssertSuccess()
+	h.Fn("create", "routes", appName, "/another", "--image", "some_random_registry/"+funcName+":0.0.2").AssertSuccess()
 
 	h.Fn("call", appName, "/another").AssertSuccess()
 }

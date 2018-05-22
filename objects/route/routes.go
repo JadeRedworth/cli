@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"path"
 	"strings"
@@ -56,14 +55,14 @@ var RouteFlags = []cli.Flag{
 }
 var updateRouteFlags = RouteFlags
 
-var callFnFlags = append(run.RunFlags,
+var CallFnFlags = append(run.RunFlags,
 	cli.BoolFlag{
 		Name:  "display-call-id",
 		Usage: "whether display call ID or not",
 	},
 )
 
-func cleanRoutePath(p string) string {
+func CleanRoutePath(p string) string {
 	p = path.Clean(p)
 	if !path.IsAbs(p) {
 		p = "/" + p
@@ -118,20 +117,6 @@ func list(c *cli.Context) error {
 
 	printRoutes(appName, resRoutes)
 	return nil
-}
-
-func Call(c *cli.Context) error {
-	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
-
-	u := url.URL{
-		Scheme: "http",
-		Host:   client.Host(),
-	}
-	u.Path = path.Join(u.Path, "r", appName, route)
-	content := run.Stdin()
-
-	return client.CallFN(u.String(), content, os.Stdout, c.String("method"), c.StringSlice("e"), c.String("content-type"), c.Bool("display-call-id"))
 }
 
 func RouteWithFlags(c *cli.Context, rt *fnmodels.Route) {
@@ -233,7 +218,7 @@ func RouteWithFuncFile(ff *common.FuncFile, rt *fnmodels.Route) error {
 
 func create(c *cli.Context) error {
 	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
+	route := CleanRoutePath(c.Args().Get(1))
 
 	rt := &fnmodels.Route{}
 	rt.Path = route
@@ -286,7 +271,7 @@ func postRoute(c *cli.Context, appName string, rt *fnmodels.Route) error {
 
 func update(c *cli.Context) error {
 	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
+	route := CleanRoutePath(c.Args().Get(1))
 
 	rt := &fnmodels.Route{}
 
@@ -303,7 +288,7 @@ func update(c *cli.Context) error {
 
 func setConfig(c *cli.Context) error {
 	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
+	route := CleanRoutePath(c.Args().Get(1))
 	key := c.Args().Get(2)
 	value := c.Args().Get(3)
 
@@ -325,7 +310,7 @@ func setConfig(c *cli.Context) error {
 func getConfig(c *cli.Context) error {
 	r, _ := client.GetClient()
 	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
+	route := CleanRoutePath(c.Args().Get(1))
 	key := c.Args().Get(2)
 
 	resp, err := r.Client.Routes.GetAppsAppRoutesRoute(&apiroutes.GetAppsAppRoutesRouteParams{
@@ -351,7 +336,7 @@ func getConfig(c *cli.Context) error {
 func listConfig(c *cli.Context) error {
 	r, _ := client.GetClient()
 	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
+	route := CleanRoutePath(c.Args().Get(1))
 
 	resp, err := r.Client.Routes.GetAppsAppRoutesRoute(&apiroutes.GetAppsAppRoutesRouteParams{
 		Context: context.Background(),
@@ -372,7 +357,7 @@ func listConfig(c *cli.Context) error {
 
 func unsetConfig(c *cli.Context) error {
 	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
+	route := CleanRoutePath(c.Args().Get(1))
 	key := c.Args().Get(2)
 
 	rt := fnmodels.Route{
@@ -393,7 +378,7 @@ func unsetConfig(c *cli.Context) error {
 func inspect(c *cli.Context) error {
 	r, _ := client.GetClient()
 	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
+	route := CleanRoutePath(c.Args().Get(1))
 	prop := c.Args().Get(2)
 
 	resp, err := r.Client.Routes.GetAppsAppRoutesRoute(&apiroutes.GetAppsAppRoutesRouteParams{
@@ -442,7 +427,7 @@ func inspect(c *cli.Context) error {
 func delete(c *cli.Context) error {
 	r, _ := client.GetClient()
 	appName := c.Args().Get(0)
-	route := cleanRoutePath(c.Args().Get(1))
+	route := CleanRoutePath(c.Args().Get(1))
 
 	_, err := r.Client.Routes.DeleteAppsAppRoutesRoute(&apiroutes.DeleteAppsAppRoutesRouteParams{
 		Context: context.Background(),

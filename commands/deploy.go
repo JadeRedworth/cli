@@ -11,7 +11,6 @@ import (
 	client "github.com/fnproject/cli/client"
 	common "github.com/fnproject/cli/common"
 	route "github.com/fnproject/cli/objects/route"
-	fnclient "github.com/fnproject/fn_go/client"
 	clientApps "github.com/fnproject/fn_go/client/apps"
 	"github.com/fnproject/fn_go/models"
 	"github.com/urfave/cli"
@@ -28,17 +27,11 @@ func DeployCommand() cli.Command {
 		Category: "DEVELOPMENT COMMANDS",
 		Flags:    flags,
 		Action:   cmd.deploy,
-		Before: func(cxt *cli.Context) error {
-			var err error
-			cmd.Fn, err = client.APIClient()
-			return err
-		},
 	}
 }
 
 type deploycmd struct {
 	appName string
-	*fnclient.Fn
 
 	wd       string
 	verbose  bool
@@ -312,6 +305,7 @@ func expandEnvConfig(configs map[string]string) map[string]string {
 }
 
 func (p *deploycmd) updateAppConfig(appf *common.AppFile) error {
+	d, _ := client.GetClient()
 	param := clientApps.NewPatchAppsAppParams()
 	param.App = appf.Name
 	param.Body = &models.AppWrapper{
@@ -320,7 +314,7 @@ func (p *deploycmd) updateAppConfig(appf *common.AppFile) error {
 		},
 	}
 
-	_, err := p.Apps.PatchAppsApp(param)
+	_, err := d.Client.Apps.PatchAppsApp(param)
 	if err != nil {
 		postParams := clientApps.NewPostAppsParams() //XXX switch to put when v2.0 Fn
 		postParams.Body = &models.AppWrapper{
@@ -330,7 +324,7 @@ func (p *deploycmd) updateAppConfig(appf *common.AppFile) error {
 			},
 		}
 
-		_, err = p.Apps.PostApps(postParams)
+		_, err = d.Client.Apps.PostApps(postParams)
 		if err != nil {
 			return err
 		}

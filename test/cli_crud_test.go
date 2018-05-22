@@ -76,7 +76,7 @@ func TestRouteUpdateValues(t *testing.T) {
 			h.Fn("create", "routes", appName1, "myroute", "--image", "foo/someimage:0.0.1").AssertSuccess()
 
 			h.Fn(append([]string{"update", "routes", appName1, "myroute"}, tc.args...)...).AssertSuccess()
-			resJson := h.Fn("insepct", "routes", appName1, "myroute").AssertSuccess()
+			resJson := h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess()
 
 			routeObj := map[string]interface{}{}
 			err := json.Unmarshal([]byte(resJson.Stdout), &routeObj)

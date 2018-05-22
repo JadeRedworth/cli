@@ -42,10 +42,6 @@ var BuildCmds = cmd{
 	"function": function.Build(),
 }
 
-var CallCmds = cmd{
-	"routes": route.CallRoute(),
-}
-
 var CreateCmds = cmd{
 	"apps":    app.Create(),
 	"routes":  route.Create(),
@@ -104,6 +100,7 @@ var SetCmds = cmd{
 var StartCmds = cmd{
 	"server": server.Start(),
 }
+
 var UnsetCmds = cmd{
 	"config":  ConfigCommand("unset"),
 	"context": context.Unset(),
