@@ -1,9 +1,7 @@
 package commands
 
 import (
-	"net/url"
 	"os"
-	"path"
 
 	"github.com/fnproject/cli/client"
 	"github.com/fnproject/cli/objects/route"
@@ -26,13 +24,7 @@ func CallCommand() cli.Command {
 func Call(c *cli.Context) error {
 	appName := c.Args().Get(0)
 	route := route.CleanRoutePath(c.Args().Get(1))
-
-	u := url.URL{
-		Scheme: "http",
-		Host:   client.Host(),
-	}
-	u.Path = path.Join(u.Path, "r", appName, route)
 	content := run.Stdin()
 
-	return client.CallFN(u.String(), content, os.Stdout, c.String("method"), c.StringSlice("e"), c.String("content-type"), c.Bool("display-call-id"))
+	return client.CallFN(appName, route, content, os.Stdout, c.String("method"), c.StringSlice("e"), c.String("content-type"), c.Bool("display-call-id"))
 }
