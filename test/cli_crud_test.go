@@ -1,13 +1,10 @@
 package test
 
 import (
-	"encoding/json"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/fnproject/cli/testharness"
-	"github.com/jmoiron/jsonq"
 )
 
 // TODO: These are both  Super minimal
@@ -38,7 +35,7 @@ func TestSimpleFnRouteUpdateCycle(t *testing.T) {
 	h := testharness.Create(t)
 	defer h.Cleanup()
 	appName1 := h.NewAppName()
-	h.Fn("create", "routes", appName1, "myroute", "--image", "foo/duffimage:0.0.1").AssertSuccess()
+	h.Fn("routes", "routes", appName1, "myroute", "--image", "foo/duffimage:0.0.1").AssertSuccess()
 	h.Fn("create", "routes", appName1, "myroute", "--image", "foo/duffimage:0.0.1").AssertFailed()
 	h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess().AssertStdoutContains(`"path": "/myroute"`)
 	h.Fn("update", "routes", "-i", "bar/duffbeer:0.1.2", appName1, "myroute").AssertSuccess()
@@ -47,6 +44,30 @@ func TestSimpleFnRouteUpdateCycle(t *testing.T) {
 	h.Fn("list", "config", "routes", appName1, "myroute").AssertSuccess().AssertStdoutContains("confA=valB")
 	h.Fn("unset", "config", "routes", appName1, "myroute", "confA").AssertSuccess()
 	h.Fn("get", "config", "routes", appName1, "myroute", "confA").AssertFailed()
+}
+
+func TestRemovingRouteAnnotation(t *testing.T) {
+	t.Parallel()
+
+	h := testharness.Create(t)
+	defer h.Cleanup()
+	appName1 := h.NewAppName()
+	h.Fn("create", "routes", appName1, "myroute", "--image", "foo/duffimage:0.0.1", "--annotation", "test=1").AssertSuccess()
+	h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess().AssertStdoutContainsJSON([]string{"annotations", "test"}, 1.0)
+	h.Fn("update", "routes", appName1, "myroute", "--image", "foo/duffimage:0.0.1", "--annotation", `test=""`).AssertSuccess()
+	h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess().AssertStdoutMissingJSONPath([]string{"annotations", "test"})
+}
+
+func TestInvalidAnnotationValue(t *testing.T) {
+	t.Parallel()
+
+	h := testharness.Create(t)
+	defer h.Cleanup()
+	appName1 := h.NewAppName()
+
+	// The route should still be created, but without the invalid annotation
+	h.Fn("create", "routes", appName1, "myroute", "--image", "foo/duffimage:0.0.1", "--annotation", "test=value").AssertSuccess().AssertStderrContains("Unable to parse annotation value 'value'. Annotations values must be valid JSON strings.")
+	h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess().AssertStdoutMissingJSONPath([]string{"annotations", "test"})
 }
 
 func TestRouteUpdateValues(t *testing.T) {
@@ -64,7 +85,7 @@ func TestRouteUpdateValues(t *testing.T) {
 		{[]string{"--format", "default"}, []string{"format"}, "default"},
 		{[]string{"--timeout", "111"}, []string{"timeout"}, 111.0},
 		{[]string{"--idle-timeout", "128"}, []string{"idle_timeout"}, 128.0},
-		{[]string{"--annotation", "test=1"}, []string{"annotation", "test"}, 1.0},
+		{[]string{"--annotation", "test=1"}, []string{"annotations", "test"}, 1.0},
 	}
 
 	for i, tcI := range validCases {
@@ -77,24 +98,7 @@ func TestRouteUpdateValues(t *testing.T) {
 			h.Fn("create", "routes", appName1, "myroute", "--image", "foo/someimage:0.0.1").AssertSuccess()
 
 			h.Fn(append([]string{"update", "routes", appName1, "myroute"}, tc.args...)...).AssertSuccess()
-			resJson := h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess()
-
-			routeObj := map[string]interface{}{}
-			err := json.Unmarshal([]byte(resJson.Stdout), &routeObj)
-			if err != nil {
-				t.Fatalf("Failed to parse routes inspect as JSON %v, %v", err, resJson)
-			}
-
-			q := jsonq.NewQuery(routeObj)
-			val, err := q.Interface(tc.query...)
-			if err != nil {
-				t.Fatalf("Failed to find path %v in json body %v", tc.query, resJson.Stdout)
-			}
-
-			if val != tc.result {
-				t.Fatalf("Expected %s to be %s  after running %s but was %s, %v", strings.Join(tc.query, "."), tc.result, strings.Join(tc.args, " "), val, resJson)
-			}
-
+			h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess().AssertStdoutContainsJSON(tc.query, tc.result)
 		})
 	}
 
@@ -121,32 +125,7 @@ func TestRouteUpdateValues(t *testing.T) {
 			h.Fn("create", "routes", appName1, "myroute", "--image", "foo/someimage:0.0.1").AssertSuccess()
 
 			h.Fn(append([]string{"update", "routes", appName1, "myroute"}, tc...)...).AssertFailed()
-			h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess().AssertStdoutContainsJSON(tc.query, tc.result)
 		})
 	}
 
-}
-
-func TestRemovingRouteAnnotation(t *testing.T) {
-	t.Parallel()
-
-	h := testharness.Create(t)
-	defer h.Cleanup()
-	appName1 := h.NewAppName()
-	h.Fn("create", "routess", appName1, "myroute", "--image", "foo/duffimage:0.0.1", "--annotation", "test=1").AssertSuccess()
-	h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess().AssertStdoutContainsJSON([]string{"annotations", "test"}, 1.0)
-	h.Fn("update", "routes", appName1, "myroute", "--image", "foo/duffimage:0.0.1", "--annotation", `test=""`).AssertSuccess()
-	h.Fn("inspect", "routes", appName1, "myroute").AssertSuccess().AssertStdoutMissingJSONPath([]string{"annotations", "test"})
-}
-
-func TestInvalidAnnotationValue(t *testing.T) {
-	t.Parallel()
-
-	h := testharness.Create(t)
-	defer h.Cleanup()
-	appName1 := h.NewAppName()
-
-	// The route should still be created, but without the invalid annotation
-	h.Fn("routes", "create", appName1, "myroute", "--image", "foo/duffimage:0.0.1", "--annotation", "test=value").AssertSuccess().AssertStderrContains("Unable to parse annotation value 'value'. Annotations values must be valid JSON strings.")
-	h.Fn("routes", "inspect", appName1, "myroute").AssertSuccess().AssertStdoutMissingJSONPath([]string{"annotations", "test"})
 }
