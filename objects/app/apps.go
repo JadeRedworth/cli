@@ -59,12 +59,26 @@ func list(c *cli.Context) error {
 	return nil
 }
 
+func appWithFlags(c *cli.Context, app *models.App) {
+	if len(app.Config) == 0 {
+		app.Config = common.ExtractEnvConfig(c.StringSlice("config"))
+	}
+	if len(app.Annotations) == 0 {
+		if len(c.StringSlice("annotation")) > 0 {
+			app.Annotations = common.ExtractAnnotations(c)
+		}
+	}
+}
+
 func create(c *cli.Context) error {
 	a, _ := client.GetClient()
-	body := &models.AppWrapper{App: &models.App{
-		Name:   c.Args().Get(0),
-		Config: common.ExtractEnvConfig(c.StringSlice("config")),
-	}}
+	app := &models.App{
+		Name: c.Args().Get(0),
+	}
+
+	appWithFlags(c, app)
+
+	body := &models.AppWrapper{App: app}
 
 	resp, err := a.Client.Apps.PostApps(&apiapps.PostAppsParams{
 		Context: context.Background(),
@@ -89,9 +103,9 @@ func create(c *cli.Context) error {
 func update(c *cli.Context) error {
 	appName := c.Args().First()
 
-	patchedApp := &models.App{
-		Config: common.ExtractEnvConfig(c.StringSlice("config")),
-	}
+	patchedApp := &models.App{}
+
+	appWithFlags(c, patchedApp)
 
 	err := patchApp(appName, patchedApp)
 	if err != nil {

@@ -155,9 +155,8 @@ func list(c *cli.Context) error {
 
 	for _, f := range files {
 		current := ""
-		home := config.GetHomeDir()
-		path := filepath.Join(home, contextsPath, f.Name())
-		yamlFile, err := ioutil.ReadFile(path)
+		fileName := f.Name()
+		yamlFile, err := getFileBytes(fileName)
 		if err != nil {
 			return err
 		}
@@ -175,6 +174,13 @@ func list(c *cli.Context) error {
 		fmt.Fprint(w, current, "\t", name, "\t", v.ContextProvider, "\t", v.EnvFnAPIURL, "\t", v.EnvFnRegistry, "\n")
 	}
 	return w.Flush()
+}
+
+func getFileBytes(name string) ([]byte, error) {
+	home := config.GetHomeDir()
+	path := filepath.Join(home, contextsPath, name)
+	yamlFile, err := ioutil.ReadFile(path)
+	return yamlFile, err
 }
 
 func (ctxMap *ContextMap) update(c *cli.Context) error {

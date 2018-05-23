@@ -19,6 +19,10 @@ func Create() cli.Command {
 				Name:  "config",
 				Usage: "application configuration",
 			},
+			cli.StringSliceFlag{
+				Name:  "annotation",
+				Usage: "application annotations",
+			},
 		},
 	}
 }
@@ -73,6 +77,10 @@ func Update() cli.Command {
 			cli.StringSliceFlag{
 				Name:  "config,c",
 				Usage: "route configuration",
+			},
+			cli.StringSliceFlag{
+				Name:  "annotation",
+				Usage: "application annotations",
 			},
 		},
 	}

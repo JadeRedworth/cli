@@ -52,6 +52,10 @@ var RouteFlags = []cli.Flag{
 		Name:  "idle-timeout",
 		Usage: "route idle timeout (eg. 30)",
 	},
+	cli.StringSliceFlag{
+		Name:  "annotation",
+		Usage: "route annotation (can be specified multiple times)",
+	},
 }
 var updateRouteFlags = RouteFlags
 
@@ -172,6 +176,11 @@ func RouteWithFlags(c *cli.Context, rt *fnmodels.Route) {
 			rt.Config = common.ExtractEnvConfig(c.StringSlice("config"))
 		}
 	}
+	if len(rt.Annotations) == 0 {
+		if len(c.StringSlice("annotations")) > 0 {
+			rt.Annotations = common.ExtractAnnotations(c)
+		}
+	}
 }
 
 func RouteWithFuncFile(ff *common.FuncFile, rt *fnmodels.Route) error {
@@ -211,6 +220,9 @@ func RouteWithFuncFile(ff *common.FuncFile, rt *fnmodels.Route) error {
 	}
 	if len(ff.Config) != 0 {
 		rt.Config = ff.Config
+	}
+	if len(ff.Annotations) != 0 {
+		rt.Annotations = ff.Annotations
 	}
 
 	return nil
