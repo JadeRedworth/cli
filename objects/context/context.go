@@ -11,6 +11,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/fnproject/cli/client"
 	"github.com/fnproject/cli/config"
 	"github.com/spf13/viper"
 	"github.com/urfave/cli"
@@ -49,6 +50,8 @@ func create(c *cli.Context) error {
 		registry = cRegistry
 	}
 
+	contextValues, err := validateContextProvider(provider, apiURL, registry)
+
 	if check, err := checkContextFileExists(context); check {
 		if err != nil {
 			return err
@@ -62,11 +65,11 @@ func create(c *cli.Context) error {
 	}
 	defer file.Close()
 
-	contextValues := &config.ContextMap{
-		config.ContextProvider: provider,
-		config.EnvFnAPIURL:     apiURL,
-		config.EnvFnRegistry:   registry,
-	}
+	// contextValues := &config.ContextMap{
+	// 	config.ContextProvider: provider,
+	// 	config.EnvFnAPIURL:     apiURL,
+	// 	config.EnvFnRegistry:   registry,
+	// }
 
 	err = config.WriteYamlFile(file.Name(), contextValues)
 	if err != nil {
@@ -258,4 +261,21 @@ func (ctxMap *ContextMap) Set(key, value string) error {
 
 	(*file)[key] = value
 	return config.WriteYamlFile(f.Name(), file)
+}
+
+func validateContextProvider(provider, apiUrl, registry string) (*config.ContextMap, error) {
+	var contextValues *config.ContextMap
+	switch provider {
+	case config.DefaultProvider:
+		contextValues = config.DefaultContextConfigContents
+	case client.OracleProvider:
+		contextValues = client.CreateOracleContextFile(apiUrl, registry)
+	default:
+		return nil, fmt.Errorf("please enter a valid provider")
+	}
+
+	(*contextValues)[config.EnvFnAPIURL] = apiUrl
+	(*contextValues)[config.EnvFnRegistry] = registry
+
+	return contextValues, nil
 }

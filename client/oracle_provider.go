@@ -18,6 +18,7 @@ import (
 )
 
 const (
+	OracleProvider      = "oracle"
 	oracleTenancyID     = "oracle.tenancy-id"
 	oracleUserID        = "oracle.user-id"
 	oracleFingerprint   = "oracle.fingerprint"
@@ -27,6 +28,15 @@ const (
 	oracleCompartmentID = "oracle.compartment-id"
 	oracleDisableCerts  = "oracle.disable-certs"
 )
+
+type OracleContextFile struct {
+	ctx                 *config.ContextFile
+	oracleTenancyID     string `yaml:"oracle.tenancy-id"`
+	oracleUserID        string `yaml:"oracle.user-id"`
+	oracleFingerPrint   string `yaml:"fingerprint"`
+	oracleCompartmentID string `yaml:"compartment-id"`
+	oracleDisableCerts  string `yaml:"disable-certs"`
+}
 
 type OCIKeyProvider struct {
 	ID  string
@@ -219,4 +229,18 @@ func getPrivateKey(keyBytes []byte, pKeyPword, pkeyFilePath string) (*rsa.Privat
 	}
 
 	return key, nil
+}
+
+func CreateOracleContextFile(apiUrl, registry string) *config.ContextMap {
+	var contextValues = &config.ContextMap{
+		config.ContextProvider: OracleProvider,
+		config.EnvFnAPIURL:     apiUrl,
+		config.EnvFnRegistry:   registry,
+		oracleTenancyID:        "",
+		oracleCompartmentID:    "",
+		oracleUserID:           "",
+		oracleDisableCerts:     "true",
+	}
+
+	return contextValues
 }

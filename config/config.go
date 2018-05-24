@@ -32,7 +32,7 @@ const (
 )
 
 var defaultRootConfigContents = &ContextMap{CurrentContext: ""}
-var defaultContextConfigContents = &ContextMap{
+var DefaultContextConfigContents = &ContextMap{
 	ContextProvider: DefaultProvider,
 	EnvFnAPIURL:     defaultLocalAPIURL,
 	EnvFnRegistry:   "",
@@ -98,7 +98,7 @@ func ensureConfiguration() error {
 			return fmt.Errorf("error creating default.yaml context file %v", err)
 		}
 
-		err = WriteYamlFile(defaultContextPath, defaultContextConfigContents)
+		err = WriteYamlFile(defaultContextPath, DefaultContextConfigContents)
 		if err != nil {
 			return err
 		}
