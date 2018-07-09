@@ -20,6 +20,8 @@ See [CONTRIBUTING](https://github.com/fnproject/cli/blob/master/CONTRIBUTING.md)
 
 See the Fn [Quickstart](https://github.com/fnproject/fn/blob/master/README.md) for sample commands.
 
+## Note:
+This is a working version of the v1 client.
 
 ## Announcement
 
