@@ -18,10 +18,10 @@ func Get() cli.Command {
 			if err != nil {
 				return err
 			}
-			c.client = provider.APIClient()
+			c.client = provider.APIClientv2()
 			return nil
 		},
-		ArgsUsage: "<app-name> <call-id>",
+		ArgsUsage: "<call-id>",
 		Action:    c.get,
 	}
 }
@@ -39,10 +39,10 @@ func List() cli.Command {
 			if err != nil {
 				return err
 			}
-			c.client = provider.APIClient()
+			c.client = provider.APIClientv2()
 			return nil
 		},
-		ArgsUsage: "<app-name>",
+		ArgsUsage: "<app-name> <fn-name>",
 		Action:    c.list,
 		Flags: []cli.Flag{
 			cli.StringFlag{

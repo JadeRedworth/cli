@@ -9,9 +9,11 @@ import (
 	"strings"
 	"time"
 
-	fnclient "github.com/fnproject/fn_go/client"
-	apicall "github.com/fnproject/fn_go/client/call"
-	"github.com/fnproject/fn_go/models"
+	apps "github.com/fnproject/cli/objects/app"
+	fns "github.com/fnproject/cli/objects/fn"
+	fnclient "github.com/fnproject/fn_go/clientv2"
+	apicall "github.com/fnproject/fn_go/clientv2/call"
+	models "github.com/fnproject/fn_go/modelsv2"
 	"github.com/go-openapi/strfmt"
 	"github.com/urfave/cli"
 )
@@ -97,38 +99,47 @@ func printCalls(c *cli.Context, calls []*models.Call) error {
 }
 
 func (c *callsCmd) get(ctx *cli.Context) error {
-	app, callID := ctx.Args().Get(0), ctx.Args().Get(1)
-	params := apicall.GetAppsAppCallsCallParams{
-		Call:    callID,
-		App:     app,
+	callID := ctx.Args().Get(0)
+
+	params := apicall.GetCallsCallIDParams{
+
+		CallID:  callID,
 		Context: context.Background(),
 	}
-	resp, err := c.client.Call.GetAppsAppCallsCall(&params)
+	resp, err := c.client.Call.GetCallsCallID(&params)
 	if err != nil {
 		switch e := err.(type) {
-		case *apicall.GetAppsAppCallsCallNotFound:
-			return errors.New(e.Payload.Error.Message)
+		case *apicall.GetCallsCallIDNotFound:
+			return errors.New(e.Payload.Message)
 		default:
 			return err
 		}
 	}
-	printCalls(ctx, []*models.Call{resp.Payload.Call})
+	printCalls(ctx, []*models.Call{resp.Payload})
 	return nil
 }
 
 func (c *callsCmd) list(ctx *cli.Context) error {
 	app := ctx.Args().Get(0)
-	params := apicall.GetAppsAppCallsParams{
-		App:     app,
+	fn := ctx.Args().Get(1)
+	a, err := apps.GetAppByName(app)
+	if err != nil {
+		return err
+	}
+
+	f, err := fns.GetFnByName(c.client, a.ID, fn)
+	if err != nil {
+		return err
+	}
+	params := apicall.GetCallsParams{
+		AppID:   &a.ID,
+		FnID:    &f.ID,
 		Context: context.Background(),
 	}
+
 	if ctx.String("cursor") != "" {
 		cursor := ctx.String("cursor")
 		params.Cursor = &cursor
-	}
-	if ctx.String("path") != "" {
-		route := ctx.String("path")
-		params.Path = &route
 	}
 	if ctx.String("from-time") != "" {
 		fromTime := ctx.String("from-time")
@@ -158,18 +169,19 @@ func (c *callsCmd) list(ctx *cli.Context) error {
 
 	var resCalls []*models.Call
 	for {
-		resp, err := c.client.Call.GetAppsAppCalls(&params)
+		resp, err := c.client.Call.GetCalls(&params)
+		fmt.Println("Resp: ", resp)
 		if err != nil {
 			switch e := err.(type) {
-			case *apicall.GetAppsAppCallsNotFound:
-				return errors.New(e.Payload.Error.Message)
+			case *apicall.GetCallsNotFound:
+				return errors.New(e.Payload.Message)
 			default:
 				return err
 			}
 		}
 
-		resCalls = append(resCalls, resp.Payload.Calls...)
-		howManyMore := n - int64(len(resCalls)+len(resp.Payload.Calls))
+		resCalls = append(resCalls, resp.Payload.Items...)
+		howManyMore := n - int64(len(resCalls)+len(resp.Payload.Items))
 		if howManyMore <= 0 || resp.Payload.NextCursor == "" {
 			break
 		}

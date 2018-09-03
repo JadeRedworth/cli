@@ -18,10 +18,10 @@ func Get() cli.Command {
 			if err != nil {
 				return err
 			}
-			l.client = provider.APIClient()
+			l.client = provider.APIClientv2()
 			return nil
 		},
-		ArgsUsage: "<app-name> <call-id>",
+		ArgsUsage: "<call-id>",
 		Action:    l.get,
 	}
 }

@@ -15,6 +15,7 @@ import (
 )
 
 func Invoke(provider provider.Provider, invokeUrl string, content io.Reader, output io.Writer, method string, env []string, contentType string, includeCallID bool) error {
+	fmt.Println("Content: ", content)
 
 	method = "POST"
 
