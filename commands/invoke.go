@@ -82,8 +82,9 @@ func (cl *invokeCmd) Invoke(c *cli.Context) error {
 	}
 
 	invokeUrl := fn.Annotations[FnInvokeEndpointAnnotation]
-	if invokeUrl == nil {
-		return fmt.Errorf("Fn invoke url annotation not present, %s", FnInvokeEndpointAnnotation)
+	if invokeUrl != nil {
+		return fmt.Errorf("Fn invoke url annotation not present, %s, please update your server version to 0.3.545.\n", FnInvokeEndpointAnnotation)
+
 	}
 
 	return client.Invoke(cl.provider, invokeUrl.(string), content, os.Stdout, c.String("method"), c.StringSlice("e"), contentType, c.Bool("display-call-id"))
