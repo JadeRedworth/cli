@@ -208,7 +208,7 @@ func (a *initFnCmd) init(c *cli.Context) error {
 		a.triggerType = strings.ToLower(a.triggerType)
 		ok := validateTriggerType(a.triggerType)
 		if !ok {
-			return fmt.Errorf("Init does not support the trigger type '%s'.\n", a.triggerType, " Permitted values are 'http'.")
+			return fmt.Errorf("Init does not support the trigger type '%s'.\n Permitted values are 'http'.", a.triggerType)
 		}
 
 		trig := make([]common.Trigger, 1)
@@ -319,6 +319,12 @@ func runInitImage(initImage string, a *initFnCmd) error {
 	var c1ErrB bytes.Buffer
 	tarR, tarW := io.Pipe()
 
+	check := exec.Command("docker", "ps")
+	err := check.Run()
+	if err != nil {
+		return errors.New("Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?")
+	}
+
 	c1 := exec.Command("docker", "run", "-e", "FN_FUNCTION_NAME="+a.ff.Name, initImage)
 	c1.Stderr = &c1ErrB
 	c1.Stdout = tarW
@@ -329,7 +335,7 @@ func runInitImage(initImage string, a *initFnCmd) error {
 		return errors.New("Error running init-image")
 	}
 
-	err := untarStream(tarR)
+	err = untarStream(tarR)
 	if err != nil {
 		return errors.New("Error un-tarring the output of the init-image")
 	}
